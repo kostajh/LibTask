@@ -1,3 +1,0 @@
-[description:"Hello world" due:"1380081600" entry:"1380244142" priority:"L" project:"getting-started" status:"pending" uuid:"91370308-c60a-400a-b10c-2d603bcc6d48"]
-[description:"Goodbye" due:"1380254400" entry:"1380244160" priority:"H" project:"finish" status:"pending" tags:"test" uuid:"34ed0ae1-e21c-441c-870a-20d079600ff3"]
-[description:"Finish writing tests" due:"1380513600" entry:"1380244179" priority:"M" project:"libtask" status:"pending" tags:"test" uuid:"c563c956-f03b-4f8a-ab71-44627ea521fa"]
