@@ -56,7 +56,10 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
      */
     public function testTaskwarrior()
     {
-        return TRUE;
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $this->assertObjectHasAttribute('taskrc', $taskwarrior);
+        $this->assertObjectHasAttribute('taskData', $taskwarrior);
+        $this->assertObjectHasAttribute('rcOptions', $taskwarrior);
     }
 
     /**
@@ -64,8 +67,13 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
      */
     public function testImport()
     {
+        // Load non-existent file.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $taskwarrior->import(__DIR__ . '/sample-tasks.json');
+        $this->assertFalse($taskwarrior->import('/tmp/' . md5(time())));
+        // Successful import.
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $result = $taskwarrior->import(__DIR__ . '/sample-tasks.json');
+        $this->assertEquals($result['success'], 1);
     }
 
     /**
@@ -95,6 +103,16 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers LibTask\Taskwarrior::decodeJson
+     */
+    public function testDecodeJson()
+    {
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $this->assertArrayHasKey('a', $taskwarrior->decodeJson('{"a":1,"b":2,"c":3,"d":4,"e":5}'));
+        $this->assertNull($taskwarrior->decodeJson('{not json'));
+    }
+
+    /**
      * @covers LibTask\Taskwarrior::loadTask
      */
     public function testLoadTask()
@@ -105,6 +123,83 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $taskwarrior->import(__DIR__ . '/sample-tasks.json');
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertNotEmpty($taskwarrior->loadTask(1));
+    }
+
+    /**
+     * @covers LibTask\Taskwarrior::taskCommand
+     */
+    public function testTaskCommand()
+    {
+        // Test a basic command.
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $ret = $taskwarrior->taskCommand('list');
+        $this->assertNotEmpty($ret);
+        $this->assertNotEmpty($ret['output']);
+        $this->assertEquals($ret['exit_code'], 0);
+        $this->assertContains('list', $ret);
+        $this->assertEquals($ret['success'], 1);
+        // No command provided.
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $this->assertFalse($taskwarrior->taskCommand());
+        // Provide filter.
+        $ret = $taskwarrior->taskCommand('list', '+test');
+        $this->assertEquals($ret['success'], 1);
+    }
+
+    /**
+     * @covers LibTask\Taskwarrior::getGlobalRcOptions
+     */
+    public function testGetGlobalRcOptions()
+    {
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $rc_options = $taskwarrior->getGlobalRcOptions();
+        $this->assertContains('rc:' . $this->taskrc, $rc_options);
+        $this->assertContains('rc.data.location=' . $this->taskData, $rc_options);
+        $this->assertContains('rc.json.array=true', $rc_options);
+    }
+
+    /**
+     * @covers LibTask\Taskwarrior::addRcOptions
+     */
+    public function testAddRcOptions()
+    {
+        $process_builder = new ProcessBuilder();
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        // Test failing to add options.
+        $this->assertFalse($taskwarrior->addRcOptions($process_builder));
+        // Add options.
+        $taskwarrior->addRcOptions($process_builder, array('rc.json.array=false'));
+        $process = $process_builder->getProcess();
+        $this->assertRegExp('/rc.json.array=false/', $process->getCommandLine());
+    }
+
+    /**
+     * @covers LibTask\Taskwarrior::addOptions
+     */
+    public function testAddOptions()
+    {
+        $process_builder = new ProcessBuilder();
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        // Test failing to add options.
+        $this->assertFalse($taskwarrior->addOptions($process_builder));
+        // Add options.
+        $taskwarrior->addOptions($process_builder, array('status' => 'completed'));
+        $process = $process_builder->getProcess();
+        $this->assertRegExp('/status:completed/', $process->getCommandLine());
+    }
+
+    /**
+     * @covers LibTask\Taskwarrior::convertOptionsToString
+     */
+    public function testConvertOptionsToString()
+    {
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $options = array('status' => 'pending');
+        // Test failing to add options.
+        $this->assertFalse($taskwarrior->convertOptionsToString());
+        // Convert options.
+        $option_string = $taskwarrior->convertOptionsToString($options);
+        $this->assertRegExp('/status:pending/', $option_string);
     }
 
 }

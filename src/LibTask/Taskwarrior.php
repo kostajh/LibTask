@@ -4,6 +4,8 @@ namespace LibTask;
 
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Exception\IOException;
 
 /**
  * @file
@@ -17,6 +19,9 @@ use Symfony\Component\Process\ProcessBuilder;
 /**
  * Taskwarrior class.
  *
+ * Methods for interacting with a Taskwarrior database.
+ *
+ * @author  Kosta Harlan <kosta@embros.org>
  */
 class Taskwarrior
 {
@@ -30,6 +35,11 @@ class Taskwarrior
     protected $taskrc = null;
     protected $rcOptions = array();
 
+    /**
+     * @param string $taskrc
+     * @param string $task_data
+     * @param array  $rc_options
+     */
     public function __construct($taskrc = '~/.taskrc', $task_data = '~/.task', $rc_options = array())
     {
         $this->taskData = $task_data;
@@ -37,8 +47,17 @@ class Taskwarrior
         $this->rcOptions = $rc_options;
     }
 
+    /**
+     * Import command.
+     * @param  string $data_file
+     * @return
+     */
     public function import($data_file)
     {
+        $fs = new Filesystem();
+        if (!$fs->exists($data_file)) {
+            return false;
+        }
         return $this->taskCommand('import', $data_file);
     }
 
@@ -56,19 +75,18 @@ class Taskwarrior
         if (!$data['success'] || $data['exit_code'] != 0) {
             return false;
         }
-        try {
-           $decoded = json_decode($data['output'], TRUE);
-           return $decoded;
-        } catch (Exception $e) {
-            print 'Failed to decode JSON';
-            return false;
-        }
+        return $this->decodeJson($data['output']);
     }
 
-    protected function convertOptionsToString($options = array())
+    public function decodeJson($json_string)
+    {
+        return json_decode($json_string, TRUE);
+    }
+
+    public function convertOptionsToString($options = array())
     {
         if (!count($options)) {
-            return ' ';
+            return false;
         }
         $option_string = '';
         foreach ($options as $key => $value) {
@@ -79,27 +97,34 @@ class Taskwarrior
         return $option_string;
     }
 
-    protected function addOptions(ProcessBuilder &$process_builder, $options)
+    public function addOptions(ProcessBuilder &$process_builder, $options = array())
     {
         if (!count($options)) {
-            return;
+            return false;
         }
         foreach ($options as $key => $value) {
             $process_builder->add($key . ':' . $value);
         }
     }
 
-    protected function addRcOptions(ProcessBuilder &$process_builder, $options)
+    public function addRcOptions(ProcessBuilder &$process_builder, $options = array())
     {
         if (!count($options)) {
-            return;
+            return false;
         }
         foreach ($options as $option) {
             $process_builder->add($option);
         }
     }
 
-    protected function taskCommand($command = NULL, $filter = NULL, $options = array())
+    /**
+     * Executes a Taskwarrior command.
+     * @param string $command The taskwarrior command.
+     * @param string $filter A filter to use with the command.
+     * @param array $options
+     * @return array
+     */
+    public function taskCommand($command = NULL, $filter = NULL, $options = array())
     {
         if (!$command) {
             return false;
@@ -124,7 +149,10 @@ class Taskwarrior
         );
     }
 
-    protected function getGlobalRcOptions()
+    /**
+     * Return an array of global taskrc options.
+     */
+    public function getGlobalRcOptions()
     {
         return array(
             'rc:' . $this->taskrc,
