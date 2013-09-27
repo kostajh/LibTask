@@ -35,36 +35,54 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $process->run();
     }
 
+    /**
+     * @covers LibTask\Taskwarrior::import
+     */
     public function testImport()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $taskwarrior->import(__DIR__ . '/sample-tasks.json');
     }
 
+    /**
+     * @covers LibTask\Taskwarrior::loadTasks();
+     */
     public function testLoadTasks()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertNotEmpty($taskwarrior->loadTasks());
     }
 
+    /**
+     * @covers LibTask\Taskwarrior::loadTask();
+     */
     public function testLoadTask()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertNotEmpty($taskwarrior->loadTask(1));
     }
 
+    /**
+     * @covers LibTask\Taskwarrior::loadTasks();
+     */
     public function testLoadTasksWithFilter()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertNotEmpty($taskwarrior->loadTasks('1'));
     }
 
+    /**
+     * @covers LibTask\Taskwarrior::loadTasks();
+     */
     public function testLoadTasksWithOptions()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertNotEmpty($taskwarrior->loadTasks(null, array('status' => 'pending')));
     }
 
+    /**
+     * @covers LibTask\Taskwarrior::loadTasks();
+     */
     public function testLoadNoTasks()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);

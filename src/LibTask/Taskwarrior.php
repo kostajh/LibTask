@@ -42,6 +42,9 @@ class Taskwarrior
         return $this->taskCommand('import', $data_file);
     }
 
+    /**
+     * @return array
+     */
     public function loadTask($filter = NULL, $options = array())
     {
         return array_shift($this->loadTasks($filter, $options));
