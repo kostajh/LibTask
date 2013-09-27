@@ -48,6 +48,17 @@ class Taskwarrior
     }
 
     /**
+     * Get the Taskwarrior version.
+     * @return string
+     */
+    public function getVersion()
+    {
+        $process = new Process('task --version');
+        $process->run();
+        return $process->getOutput();
+    }
+
+    /**
      * Import command.
      * @param  string $data_file
      * @return

@@ -63,6 +63,15 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers LibTask\Taskwarrior::getVersion
+     */
+    public function testGetVersion()
+    {
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $this->assertRegExp('/2./', $taskwarrior->getVersion());
+    }
+
+    /**
      * @covers LibTask\Taskwarrior::import
      */
     public function testImport()
