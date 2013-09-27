@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <phpunit bootstrap="tests/bootstrap.php" colors="true">
-    <testsuites>
-        <testsuite name="LibTaskPHP Test Suite">
-            <directory>tests/libtaskphp/</directory>
-        </testsuite>
-    </testsuites>
-
-    <filter>
-        <whitelist>
-            <directory suffix=".php">src/libtaskphp/</directory>
-        </whitelist>
-    </filter>
+  <testsuites>
+    <testsuite name="LibTask Test Suite">
+      <directory>tests/LibTask/</directory>
+    </testsuite>
+  </testsuites>
+  <filter>
+    <whitelist>
+      <directory suffix=".php">src/LibTask/</directory>
+    </whitelist>
+  </filter>
 </phpunit>
