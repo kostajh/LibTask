@@ -1,0 +1,26 @@
+{
+    "name": "kostajh/libtask-php",
+    "type": "library",
+    "description": "PHP library for interacting with Taskwarrior 2.x.",
+    "keywords": ["taskwarrior", "task"],
+    "homepage": "http://github.com/kostajh/LibTask",
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "Kosta Harlan",
+            "email": "kosta@embros.org",
+            "homepage": "http://kostaharlan.net",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "LibTask": "src"
+        }
+    },
+    "require": {
+        "symfony/config": "2.3.*",
+        "symfony/serializer": "2.3.*",
+        "symfony/process": "2.3.*"
+    }
+}
