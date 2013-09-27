@@ -53,9 +53,8 @@ class Taskwarrior
      */
     public function getVersion()
     {
-        $process = new Process('task --version');
-        $process->run();
-        return $process->getOutput();
+        $result = $this->taskCommand('_version');
+        return $result['output'];
     }
 
     /**
