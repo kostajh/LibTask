@@ -18,7 +18,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $this->taskrc = __DIR__ . '/.taskrc';
     }
 
-    protected function deleteTestData()
+    protected static function deleteTestData()
     {
         // Set up test directory.
         $command = sprintf('rm ' . __DIR__ . '/.task/*');
@@ -26,14 +26,14 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $process->run();
     }
 
-    protected function mangleTaskData()
+    protected static function mangleTaskData()
     {
         $command = 'echo "Mangled" >> ' . __DIR__ . '/.task/pending.data';
         $process = new Process($command);
         $process->run();
     }
 
-    protected function initializeTaskwarrior()
+    protected static function initializeTaskwarrior()
     {
         $process_builder = new ProcessBuilder(
             array(
