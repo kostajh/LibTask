@@ -66,7 +66,8 @@ class Taskwarrior
      */
     public function loadTask($filter = NULL, $options = array())
     {
-        return array_shift($this->loadTasks($filter, $options));
+        $tasks = $this->loadTasks($filter, $options);
+        return array_shift($tasks);
     }
 
     public function loadTasks($filter = NULL, $options = array())
