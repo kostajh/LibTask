@@ -24,6 +24,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $command = sprintf('rm ' . __DIR__ . '/.task/*');
         $process = new Process($command);
         $process->run();
+        self::initializeTaskwarrior();
     }
 
     protected static function mangleTaskData()
@@ -48,7 +49,6 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         self::deleteTestData();
-        self::initializeTaskwarrior();
     }
 
     /**
@@ -127,7 +127,6 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testLoadTask()
     {
         self::deleteTestData();
-        self::initializeTaskwarrior();
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $taskwarrior->import(__DIR__ . '/sample-tasks.json');
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
@@ -198,17 +197,26 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers LibTask\Taskwarrior::convertOptionsToString
+     * @covers LibTask\Taskwarrior::addTask
      */
-    public function testConvertOptionsToString()
+    public function testAddTask()
     {
+        self::deleteTestData();
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $options = array('status' => 'pending');
-        // Test failing to add options.
-        $this->assertFalse($taskwarrior->convertOptionsToString());
-        // Convert options.
-        $option_string = $taskwarrior->convertOptionsToString($options);
-        $this->assertRegExp('/status:pending/', $option_string);
+        $mods = array(
+            'Brew coffee',
+            'project' => 'life',
+            '+work',
+            'priority' => 'H',
+        );
+        $result = $taskwarrior->addTask($mods);
+        $this->assertContains('Created task', $result);
+        $task = $taskwarrior->loadTasks('Brew coffee');
+        $this->assertCount(1, $task);
+        $this->assertEquals('Brew coffee', $task[0]['description']);
+        $this->assertEquals('H', $task[0]['priority']);
+        $this->assertEquals('life', $task[0]['project']);
+        $this->assertEquals('work', $task[0]['tags'][0]);
+        $this->assertArrayHasKey('uuid', $result);
     }
-
 }

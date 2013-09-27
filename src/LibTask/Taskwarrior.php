@@ -72,6 +72,25 @@ class Taskwarrior
     }
 
     /**
+     * Add a task.
+     * @param array $mods
+     */
+    public function addTask($mods = array())
+    {
+        if (!count($mods)) {
+            return false;
+        }
+        $result = $this->taskCommand('add', NULL, $mods);
+        // Parse the output and get the task ID.
+        $task_id = ltrim($result['output'], 'Created task ');
+        $task_id = rtrim($task_id, "\n.");
+        // Get the UUID and return along with the results.
+        $task = $this->loadTask($task_id);
+        $result['uuid'] = $task['uuid'];
+        return $result;
+    }
+
+    /**
      * @return array
      */
     public function loadTask($filter = NULL, $options = array())
@@ -94,27 +113,18 @@ class Taskwarrior
         return json_decode($json_string, TRUE);
     }
 
-    public function convertOptionsToString($options = array())
-    {
-        if (!count($options)) {
-            return false;
-        }
-        $option_string = '';
-        foreach ($options as $key => $value) {
-            $option_string .= $key . ':' . $value;
-            $option_string .= ' ';
-        }
-
-        return $option_string;
-    }
-
     public function addOptions(ProcessBuilder &$process_builder, $options = array())
     {
         if (!count($options)) {
             return false;
         }
         foreach ($options as $key => $value) {
-            $process_builder->add($key . ':' . $value);
+            if (is_int($key)) {
+                $process_builder->add($value);
+            }
+            else {
+                $process_builder->add($key . ':' . $value);
+            }
         }
     }
 
