@@ -36,6 +36,14 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers LibTask\Taskwarrior::__construct
+     */
+    public function testTaskwarrior()
+    {
+        return TRUE;
+    }
+
+    /**
      * @covers LibTask\Taskwarrior::import
      */
     public function testImport()
@@ -45,48 +53,31 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers LibTask\Taskwarrior::loadTasks();
+     * @covers LibTask\Taskwarrior::loadTasks
      */
     public function testLoadTasks()
     {
+        // Load all tasks.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertNotEmpty($taskwarrior->loadTasks());
+        // Load tasks with filter.
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $this->assertNotEmpty($taskwarrior->loadTasks('1'));
+        // Load tasks with options.
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $this->assertNotEmpty($taskwarrior->loadTasks(null, array('status' => 'pending')));
+        // Empty result when loading tasks.
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $this->assertEmpty($taskwarrior->loadTasks(md5(time())));
     }
 
     /**
-     * @covers LibTask\Taskwarrior::loadTask();
+     * @covers LibTask\Taskwarrior::loadTask
      */
     public function testLoadTask()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertNotEmpty($taskwarrior->loadTask(1));
-    }
-
-    /**
-     * @covers LibTask\Taskwarrior::loadTasks();
-     */
-    public function testLoadTasksWithFilter()
-    {
-        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $this->assertNotEmpty($taskwarrior->loadTasks('1'));
-    }
-
-    /**
-     * @covers LibTask\Taskwarrior::loadTasks();
-     */
-    public function testLoadTasksWithOptions()
-    {
-        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $this->assertNotEmpty($taskwarrior->loadTasks(null, array('status' => 'pending')));
-    }
-
-    /**
-     * @covers LibTask\Taskwarrior::loadTasks();
-     */
-    public function testLoadNoTasks()
-    {
-        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $this->assertEmpty($taskwarrior->loadTasks(md5(time())));
     }
 
 }
