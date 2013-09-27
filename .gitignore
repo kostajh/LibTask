@@ -1,3 +1,4 @@
 vendor/*
-tests/.task
-tests/.task/*
+tests/LibTask/.task
+tests/LibTask/.task/*
+
