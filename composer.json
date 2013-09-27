@@ -1,5 +1,5 @@
 {
-    "name": "LibTask/LibTask",
+    "name": "libtask/libtask",
     "type": "library",
     "description": "PHP library for interacting with Taskwarrior 2.x.",
     "keywords": ["taskwarrior", "task"],
