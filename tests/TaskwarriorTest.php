@@ -18,13 +18,23 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $this->taskrc = __DIR__ . '/.taskrc';
     }
 
-    public static function setUpBeforeClass()
+    protected function deleteTestData()
     {
         // Set up test directory.
         $command = sprintf('rm ' . __DIR__ . '/.task/*');
         $process = new Process($command);
         $process->run();
+    }
 
+    protected function mangleTaskData()
+    {
+        $command = 'echo "Mangled" >> ' . __DIR__ . '/.task/pending.data';
+        $process = new Process($command);
+        $process->run();
+    }
+
+    protected function initializeTaskwarrior()
+    {
         $process_builder = new ProcessBuilder(
             array(
                 'rc:' . __DIR__ . '/.task',
@@ -33,6 +43,12 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $process_builder->setPrefix('task');
         $process = $process_builder->getProcess();
         $process->run();
+    }
+
+    public static function setUpBeforeClass()
+    {
+        self::deleteTestData();
+        self::initializeTaskwarrior();
     }
 
     /**
@@ -69,6 +85,13 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         // Empty result when loading tasks.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertEmpty($taskwarrior->loadTasks(md5(time())));
+        // Empty task database.
+        $taskwarrior = new Taskwarrior(md5(time()), md5(time()));
+        $this->assertEmpty($taskwarrior->loadTasks());
+        // Test failing export command.
+        self::mangleTaskData();
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $this->assertFalse($taskwarrior->loadTasks());
     }
 
     /**
@@ -76,6 +99,10 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
      */
     public function testLoadTask()
     {
+        self::deleteTestData();
+        self::initializeTaskwarrior();
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $taskwarrior->import(__DIR__ . '/sample-tasks.json');
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertNotEmpty($taskwarrior->loadTask(1));
     }

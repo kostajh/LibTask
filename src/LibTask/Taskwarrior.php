@@ -28,13 +28,13 @@ class Taskwarrior
      */
     protected $taskData = null;
     protected $taskrc = null;
+    protected $rcOptions = array();
 
-    protected $tasks = null;
-
-    public function __construct($taskrc = '~/.taskrc', $task_data = '~/.task')
+    public function __construct($taskrc = '~/.taskrc', $task_data = '~/.task', $rc_options = array())
     {
         $this->taskData = $task_data;
         $this->taskrc = $taskrc;
+        $this->rcOptions = $rc_options;
     }
 
     public function import($data_file)
@@ -58,10 +58,10 @@ class Taskwarrior
         }
         try {
            $decoded = json_decode($data['output'], TRUE);
-
            return $decoded;
         } catch (Exception $e) {
             print 'Failed to decode JSON';
+            return false;
         }
     }
 
@@ -99,13 +99,13 @@ class Taskwarrior
         }
     }
 
-    protected function taskCommand($command = NULL, $filter = NULL, $options = NULL)
+    protected function taskCommand($command = NULL, $filter = NULL, $options = array())
     {
         if (!$command) {
             return false;
         }
         $process_builder = new ProcessBuilder();
-        $this->addRcOptions($process_builder, $this->getGlobalRcOptions());
+        $this->addRcOptions($process_builder, array_merge($this->rcOptions, $this->getGlobalRcOptions()));
         if ($filter) {
             $process_builder->add($filter);
         }
