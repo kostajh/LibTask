@@ -42,7 +42,8 @@ class Taskwarrior
         return $this->taskCommand('import', $data_file);
     }
 
-    public function loadTask($filter = NULL, $options = array()) {
+    public function loadTask($filter = NULL, $options = array())
+    {
         return array_shift($this->loadTasks($filter, $options));
     }
 
@@ -54,9 +55,9 @@ class Taskwarrior
         }
         try {
            $decoded = json_decode($data['output'], TRUE);
+
            return $decoded;
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             print 'Failed to decode JSON';
         }
     }
@@ -67,10 +68,11 @@ class Taskwarrior
             return ' ';
         }
         $option_string = '';
-        foreach($options as $key => $value) {
+        foreach ($options as $key => $value) {
             $option_string .= $key . ':' . $value;
             $option_string .= ' ';
         }
+
         return $option_string;
     }
 
@@ -79,8 +81,7 @@ class Taskwarrior
         if (!count($options)) {
             return;
         }
-        foreach ($options as $key => $value)
-        {
+        foreach ($options as $key => $value) {
             $process_builder->add($key . ':' . $value);
         }
     }
@@ -90,8 +91,7 @@ class Taskwarrior
         if (!count($options)) {
             return;
         }
-        foreach ($options as $option)
-        {
+        foreach ($options as $option) {
             $process_builder->add($option);
         }
     }
@@ -111,6 +111,7 @@ class Taskwarrior
         $process_builder->setPrefix('task');
         $process = $process_builder->getProcess();
         $process->run();
+
         return array(
             'output' => $process->getOutput(),
             'error_output' => $process->getErrorOutput(),
