@@ -5,7 +5,6 @@ namespace LibTask;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Filesystem\Exception\IOException;
 
 /**
  * @file
@@ -54,12 +53,13 @@ class Taskwarrior
     public function getVersion()
     {
         $result = $this->taskCommand('_version');
+
         return $result['output'];
     }
 
     /**
      * Import command.
-     * @param  string $data_file
+     * @param string $data_file
      * @return
      */
     public function import($data_file)
@@ -68,6 +68,7 @@ class Taskwarrior
         if (!$fs->exists($data_file)) {
             return false;
         }
+
         return $this->taskCommand('import', $data_file);
     }
 
@@ -87,6 +88,7 @@ class Taskwarrior
         // Get the UUID and return along with the results.
         $task = $this->loadTask($task_id);
         $result['uuid'] = $task['uuid'];
+
         return $result;
     }
 
@@ -96,6 +98,7 @@ class Taskwarrior
     public function loadTask($filter = NULL, $options = array())
     {
         $tasks = $this->loadTasks($filter, $options);
+
         return array_shift($tasks);
     }
 
@@ -105,6 +108,7 @@ class Taskwarrior
         if (!$data['success'] || $data['exit_code'] != 0) {
             return false;
         }
+
         return $this->decodeJson($data['output']);
     }
 
@@ -121,8 +125,7 @@ class Taskwarrior
         foreach ($options as $key => $value) {
             if (is_int($key)) {
                 $process_builder->add($value);
-            }
-            else {
+            } else {
                 $process_builder->add($key . ':' . $value);
             }
         }
@@ -140,9 +143,9 @@ class Taskwarrior
 
     /**
      * Executes a Taskwarrior command.
-     * @param string $command The taskwarrior command.
-     * @param string $filter A filter to use with the command.
-     * @param array $options
+     * @param  string $command The taskwarrior command.
+     * @param  string $filter  A filter to use with the command.
+     * @param  array  $options
      * @return array
      */
     public function taskCommand($command = NULL, $filter = NULL, $options = array())
