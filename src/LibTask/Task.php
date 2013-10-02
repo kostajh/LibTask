@@ -30,15 +30,15 @@ class Task
      */
     private $description;
     /**
-     * @Type("int")
+     * @Type("string")
      */
     private $due;
     /**
-     * @Type("int")
+     * @Type("string")
      */
     private $entry;
     /**
-     * @Type("int")
+     * @Type("string")
      */
     private $modified;
     /**
@@ -162,15 +162,15 @@ class Task
     }
 
     public function setDue($due) {
-        $this->due = $due;
+        $this->due = (is_string($due)) ? strtotime($due) : $due;
     }
 
     public function setEntry($entry) {
-        $this->entry = $entry;
+        $this->entry = (is_string($entry)) ? strtotime($entry) : $entry;
     }
 
     public function setModified($modified) {
-        $this->modified = $modified;
+        $this->modified = (is_string($modified)) ? strtotime($modified) : $modified;
     }
 
     public function setProject($project) {
