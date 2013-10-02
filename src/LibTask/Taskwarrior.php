@@ -5,14 +5,20 @@ namespace LibTask;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
 use Symfony\Component\Filesystem\Filesystem;
+use JMS\Serializer\SerializerBuilder;
+use JMS\Serializer\Annotation\Type;
+use Doctrine\Common\Annotations\AnnotationRegistry;
+use Symfony\Component\ClassLoader\UniversalClassLoader;
+use JMS\Serializer\Handler\HandlerRegistry;
+use LibTask\Task;
+use LibTask\TaskSerializeHandler;
+use LibTask\TaskSerializeSubscriber;
+
+AnnotationRegistry::registerLoader('class_exists');
 
 /**
  * @file
  *   Methods for interacting with Taskwarrior.
- * @category
- * @tags
- * @package
- * @license
  */
 
 /**
@@ -141,6 +147,16 @@ class Taskwarrior
         }
     }
 
+    public function importTask(Task $task)
+    {
+        $jsonData = $this->serializeTask($task);
+        $fs = new Filesystem();
+        $file = '/tmp/libtask-' . time() . '-task.json';
+        $fs->dumpFile($file, $jsonData);
+        return $this->import($file);
+    }
+
+
     /**
      * Executes a Taskwarrior command.
      * @param  string $command The taskwarrior command.
@@ -172,6 +188,19 @@ class Taskwarrior
             'exit_code' => $process->getExitCode(),
         );
     }
+
+    public function serializeTask(Task $task) {
+        $serializer = SerializerBuilder::create()
+        ->addDefaultHandlers()
+        ->configureHandlers(function(HandlerRegistry $registry) {
+            $registry->registerSubscribingHandler(new TaskSerializeHandler());
+            })
+        ->build();
+        $jsonContent = $serializer->serialize($task, 'json');
+        return $jsonContent;
+    }
+
+
 
     /**
      * Return an array of global taskrc options.

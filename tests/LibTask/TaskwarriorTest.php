@@ -3,6 +3,7 @@
 namespace Taskwarrior;
 
 use LibTask\Taskwarrior;
+use LibTask\Task;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
 
@@ -219,4 +220,24 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('work', $task[0]['tags'][0]);
         $this->assertArrayHasKey('uuid', $result);
     }
+
+    public function testTaskSerialize() {
+      $task = new Task();
+      $task->setDescription('Hello world');
+      $task->setUdas(array('logged' => 'false', 'estimate' => '2.5'));
+      $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+      $jsonData = $taskwarrior->serializeTask($task);
+      $this->assertRegExp('/"description":"Hello world"/', $jsonData);
+    }
+
+    public function testTaskImport() {
+        $task = new Task;
+        $task->setDescription('Hello world');
+        $task->setProject('life');
+        $task->setPriority('M');
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $result = $taskwarrior->importTask($task);
+        $this->assertRegExp('/Hello world/', $result['output']);
+    }
+
 }

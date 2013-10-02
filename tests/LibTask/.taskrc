@@ -1,1 +1,6 @@
 data.location=~/.task
+uda.estimate.type=duration
+uda.estimate.label=Estimate
+uda.logged.type=string
+uda.logged.values=true,false
+uda.logged.label=Logged
