@@ -18,7 +18,8 @@ class TaskTest extends  \PHPUnit_Framework_TestCase
 
     /**
      * Test creating a Task.
-     * @covers LibTask\Task::__construct
+     *
+     * @covers LibTask\Task\Task::__construct
      */
     public function testTask() {
         $task = new Task('Grind coffee beans');
