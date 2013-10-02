@@ -90,6 +90,7 @@ class Taskwarrior
     {
         $result = $this->importTask($task);
         $result['uuid'] = $this->getUuidFromImport($result, $task);
+        $result['task'] = $this->loadTask($result['uuid']);
         return $result;
     }
 
@@ -109,6 +110,7 @@ class Taskwarrior
         $output = ltrim($output, 'Importing ');
         $output = ltrim($output, $filename);
         $uuid = trim(substr($output, 0, strpos($output, $task->getDescription())));
+        return $uuid;
     }
 
     /**

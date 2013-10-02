@@ -204,6 +204,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('H', $task->getPriority());
         $this->assertEquals('life', $task->getProject());
         $this->assertArrayHasKey('uuid', $result);
+        $this->assertEquals($result['uuid'], $task->getUuid());
     }
 
     public function testTaskSerialize() {
