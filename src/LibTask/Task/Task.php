@@ -1,6 +1,6 @@
 <?php
 
-namespace LibTask;
+namespace LibTask\Task;
 
 use JMS\Serializer;
 use JMS\Serializer\Annotation\Type;

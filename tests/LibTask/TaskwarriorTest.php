@@ -3,7 +3,7 @@
 namespace Taskwarrior;
 
 use LibTask\Taskwarrior;
-use LibTask\Task;
+use LibTask\Task\Task;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
 

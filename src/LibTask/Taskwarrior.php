@@ -11,7 +11,7 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\ClassLoader\UniversalClassLoader;
 use JMS\Serializer\Handler\HandlerRegistry;
 use JMS\Serializer\Exception\RuntimeException;
-use LibTask\Task;
+use LibTask\Task\Task;
 use LibTask\TaskSerializeHandler;
 use LibTask\TaskSerializeSubscriber;
 
@@ -138,7 +138,7 @@ class Taskwarrior
         $serializer = SerializerBuilder::create()->build();
         $tasks = array();
         try {
-            $object = $serializer->deserialize($data['output'], 'ArrayCollection<Libtask\Task>', 'json');
+            $object = $serializer->deserialize($data['output'], 'ArrayCollection<Libtask\Task\Task>', 'json');
         } catch (RuntimeException $e) {
             echo 'Malformed JSON';
             return false;

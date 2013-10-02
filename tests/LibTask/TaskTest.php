@@ -2,7 +2,7 @@
 
 namespace Taskwarrior;
 
-use LibTask\Task;
+use LibTask\Task\Task;
 use LibTask\Taskwarrior;
 
 class TaskTest extends  \PHPUnit_Framework_TestCase
