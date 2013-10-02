@@ -76,15 +76,22 @@ class Task
 
     /**
      * Construct.
+     *
+     * @param $description The description to use for the task.
      */
     public function __construct($description = '')
     {
+        // Set task description.
         if ($description) {
             $this->setDescription($description);
         }
     }
 
-    // Getters
+    /**
+     * Get the task Id.
+     * @Type("integer")
+     * @return int Taskwarrior task ID
+     */
     public function getId()
     {
         return $this->id;
@@ -100,6 +107,13 @@ class Task
         return $this->due;
     }
 
+    /**
+     * Get the task time entry.
+     *
+     * If the value is not set, return the current time as a UNIX timestamp.
+     *
+     * @Type("integer")
+     */
     public function getEntry()
     {
         return ($this->entry) ? $this->entry :  (string) time();
@@ -150,7 +164,6 @@ class Task
         return $this->priority;
     }
 
-    // Setters
     public function setDescription($description)
     {
         $this->description = $description;
@@ -178,7 +191,9 @@ class Task
     }
 
     public function setStatus($status) {
-        // TODO: Validate status.
+        if (!in_array($status, array('pending', 'completed'))) {
+            // TODO: Throw exception.
+        }
         $this->status = $status;
     }
 
