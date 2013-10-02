@@ -204,20 +204,16 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     {
         self::deleteTestData();
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $mods = array(
-            'Brew coffee',
-            'project' => 'life',
-            '+work',
-            'priority' => 'H',
-        );
-        $result = $taskwarrior->addTask($mods);
+        $task = new Task('Brew coffee');
+        $task->setProject('life');
+        $task->setPriority('H');
+        $result = $taskwarrior->addTask($task);
         $this->assertContains('Created task', $result);
         $task = $taskwarrior->loadTasks('Brew coffee');
         $this->assertCount(1, $task);
         $this->assertEquals('Brew coffee', $task[0]['description']);
         $this->assertEquals('H', $task[0]['priority']);
         $this->assertEquals('life', $task[0]['project']);
-        $this->assertEquals('work', $task[0]['tags'][0]);
         $this->assertArrayHasKey('uuid', $result);
     }
 

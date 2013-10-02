@@ -65,6 +65,7 @@ class Taskwarrior
 
     /**
      * Import command.
+     *
      * @param string $data_file
      * @return
      */
@@ -75,39 +76,58 @@ class Taskwarrior
             return false;
         }
 
-        return $this->taskCommand('import', $data_file);
-    }
-
-    /**
-     * Add a task.
-     * @param array $mods
-     */
-    public function addTask($mods = array())
-    {
-        if (!count($mods)) {
-            return false;
-        }
-        $result = $this->taskCommand('add', NULL, $mods);
-        // Parse the output and get the task ID.
-        $task_id = ltrim($result['output'], 'Created task ');
-        $task_id = rtrim($task_id, "\n.");
-        // Get the UUID and return along with the results.
-        $task = $this->loadTask($task_id);
-        $result['uuid'] = $task['uuid'];
-
+        $result = $this->taskCommand('import', $data_file);
         return $result;
     }
 
     /**
+     * Add a task.
+     *
+     * @param array $mods
+     */
+    public function addTask(Task $task)
+    {
+        $result = $this->importTask($task);
+        $result['uuid'] = $this->getUuidFromImport($result, $task);
+        return $result;
+    }
+
+    public function getUuidFromImport($result, $task) {
+        // Parse the output and get the task UUID.
+        $output = explode(' ', $result['output']);
+        $parts = explode(' ', $result['command_line']);
+        $intersect = array_intersect($output, $parts);
+        foreach ($output as $item) {
+            if (in_array(trim($item), $parts)) {
+                $filename = $item;
+                break;
+            }
+        }
+        // Get the filename from the output.
+        $output = $result['output'];
+        $output = ltrim($output, 'Importing ');
+        $output = ltrim($output, $filename);
+        $uuid = trim(substr($output, 0, strpos($output, $task->getDescription())));
+    }
+
+    /**
+     * Load a single Task.
+     *
      * @return array
      */
     public function loadTask($filter = NULL, $options = array())
     {
         $tasks = $this->loadTasks($filter, $options);
-
         return array_shift($tasks);
     }
 
+    /**
+     * Load an array of Tasks.
+     *
+     * @param string $filter
+     * @param array $options
+     * @return array
+     */
     public function loadTasks($filter = NULL, $options = array())
     {
         $data = $this->taskCommand('export', $filter, $options);
@@ -118,11 +138,20 @@ class Taskwarrior
         return $this->decodeJson($data['output']);
     }
 
+    /**
+     * Decode JSON. This will be replaced by JMS/Serializer.
+     */
     public function decodeJson($json_string)
     {
         return json_decode($json_string, TRUE);
     }
 
+    /**
+     * Add options to the ProcessBuilder object.
+     *
+     * @param ProcessBuilder $process_builder
+     * @param array $options
+     */
     public function addOptions(ProcessBuilder &$process_builder, $options = array())
     {
         if (!count($options)) {
@@ -137,6 +166,9 @@ class Taskwarrior
         }
     }
 
+    /**
+     * Add RC options to the ProcessBuilder object.
+     */
     public function addRcOptions(ProcessBuilder &$process_builder, $options = array())
     {
         if (!count($options)) {
@@ -147,6 +179,11 @@ class Taskwarrior
         }
     }
 
+    /**
+     * Import a single task into Taskwarrior.
+     *
+     * @param Task $task
+     */
     public function importTask(Task $task)
     {
         $jsonData = $this->serializeTask($task);
@@ -156,9 +193,11 @@ class Taskwarrior
         return $this->import($file);
     }
 
-
     /**
      * Executes a Taskwarrior command.
+     *
+     * This method should not be called directly if possible.
+     *
      * @param  string $command The taskwarrior command.
      * @param  string $filter  A filter to use with the command.
      * @param  array  $options
@@ -189,6 +228,11 @@ class Taskwarrior
         );
     }
 
+    /**
+     * Serializes a task to JSON for importing into Taskwarrior.
+     *
+     * @param Task $task
+     */
     public function serializeTask(Task $task) {
         $serializer = SerializerBuilder::create()
         ->addDefaultHandlers()
@@ -199,8 +243,6 @@ class Taskwarrior
         $jsonContent = $serializer->serialize($task, 'json');
         return $jsonContent;
     }
-
-
 
     /**
      * Return an array of global taskrc options.
