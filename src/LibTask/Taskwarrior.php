@@ -10,6 +10,7 @@ use JMS\Serializer\Annotation\Type;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\ClassLoader\UniversalClassLoader;
 use JMS\Serializer\Handler\HandlerRegistry;
+use JMS\Serializer\Exception\RuntimeException;
 use LibTask\Task;
 use LibTask\TaskSerializeHandler;
 use LibTask\TaskSerializeSubscriber;
@@ -131,19 +132,18 @@ class Taskwarrior
     public function loadTasks($filter = NULL, $options = array())
     {
         $data = $this->taskCommand('export', $filter, $options);
-        if (!$data['success'] || $data['exit_code'] != 0) {
+        if (!$data['success'] || $data['exit_code'] != 0 || !$data['output']) {
             return false;
         }
-
-        return $this->decodeJson($data['output']);
-    }
-
-    /**
-     * Decode JSON. This will be replaced by JMS/Serializer.
-     */
-    public function decodeJson($json_string)
-    {
-        return json_decode($json_string, TRUE);
+        $serializer = SerializerBuilder::create()->build();
+        $tasks = array();
+        try {
+            $object = $serializer->deserialize($data['output'], 'ArrayCollection<Libtask\Task>', 'json');
+        } catch (RuntimeException $e) {
+            echo 'Malformed JSON';
+            return false;
+        }
+        return $object;
     }
 
     /**

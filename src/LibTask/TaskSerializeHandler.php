@@ -15,12 +15,13 @@ class TaskSerializeHandler implements SubscribingHandlerInterface
             array(
                 'direction' => GraphNavigator::DIRECTION_SERIALIZATION,
                 'format' => 'json',
-                'type' => 'Array',
+                'type' => 'string',
+                'method' => 'convertArrayToUdas',
             ),
         );
     }
 
-    public function convertArrayToUdas(JsonSerializationVisitor $visitor, Array $udas, array $type, Context $context)
+    public function convertArrayToUdas(JsonSerializationVisitor $visitor, $udas, array $type, Context $context)
     {
         print 'here we are';
     }

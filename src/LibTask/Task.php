@@ -22,7 +22,7 @@ use Symfony\Component\ClassLoader\UniversalClassLoader;
 class Task
 {
     /**
-     * @Type("int")
+     * @Type("integer")
      */
     private $id;
     /**
@@ -50,7 +50,7 @@ class Task
      */
     private $status;
     /**
-     * @Type("Array")
+     * @Type("array")
      */
     private $tags;
     /**
