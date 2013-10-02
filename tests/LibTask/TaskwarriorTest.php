@@ -113,16 +113,6 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers LibTask\Taskwarrior::decodeJson
-     */
-    public function testDecodeJson()
-    {
-        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $this->assertArrayHasKey('a', $taskwarrior->decodeJson('{"a":1,"b":2,"c":3,"d":4,"e":5}'));
-        $this->assertNull($taskwarrior->decodeJson('{not json'));
-    }
-
-    /**
      * @covers LibTask\Taskwarrior::loadTask
      */
     public function testLoadTask()
