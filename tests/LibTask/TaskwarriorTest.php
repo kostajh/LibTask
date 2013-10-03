@@ -198,6 +198,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $task->setProject('life');
         $task->setPriority('H');
         $task->setTags(array('coffee', 'beans'));
+        $task->setUdas(array('logged' => 'false', 'estimate' => '3days'));
         $result = $taskwarrior->addTask($task);
         $this->assertContains('Created task', $result);
         $task = $result['task'];
@@ -206,6 +207,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('life', $task->getProject());
         $this->assertArrayHasKey('uuid', $result);
         $this->assertEquals($result['uuid'], $task->getUuid());
+        $udas = $task->getUdas();
         // Test adding dependencies.
         $new_task = new Task('Drink coffee');
         $new_task->setDependencies(array($task->getUuid()));
@@ -214,17 +216,15 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     }
 
     public function testTaskSerialize() {
-        self::deleteTestData();
         $task = new Task();
         $task->setDescription('Hello world');
-        $task->setUdas(array('logged' => 'false', 'estimate' => '2.5'));
+        $task->setUdas(array('logged' => 'false', 'estimate' => '1day'));
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $jsonData = $taskwarrior->serializeTask($task);
         $this->assertRegExp('/"description":"Hello world"/', $jsonData);
     }
 
     public function testTaskImport() {
-        self::deleteTestData();
         $task = new Task;
         $task->setDescription('Hello world');
         $task->setProject('life');

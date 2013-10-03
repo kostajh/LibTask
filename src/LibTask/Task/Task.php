@@ -5,6 +5,7 @@ namespace LibTask\Task;
 use JMS\Serializer;
 use JMS\Serializer\Annotation\Type;
 use JMS\Serializer\Annotation\Accessor;
+use JMS\Serializer\Annotation\Inline;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\ClassLoader\UniversalClassLoader;
 
@@ -64,11 +65,12 @@ class Task
     private $urgency;
     /**
      * @Type("string")
-     * @Accessor(getter="getDependencies")
+     * @Accessor(getter="getSerializedDependencies")
      */
     private $depends;
     /**
      * @Type("array<string, string>")
+     * @Inline
      * @Accessor(getter="getUdas")
      */
     private $udas;
@@ -168,6 +170,11 @@ class Task
     }
 
     public function getDependencies()
+    {
+        return $this->depends;
+    }
+
+    public function getSerializedDependencies()
     {
         return (is_array($this->depends)) ? implode(',', $this->depends) : (string) $this->depends;
     }
