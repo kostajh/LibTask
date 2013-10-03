@@ -121,6 +121,10 @@ class Taskwarrior
     public function loadTask($filter = NULL, $options = array())
     {
         $tasks = $this->loadTasks($filter, $options);
+        if (!is_array($tasks) || !count($tasks)) {
+            // TODO: Throw exception.
+            return false;
+        }
         return array_shift($tasks);
     }
 
@@ -190,6 +194,7 @@ class Taskwarrior
     {
         $jsonData = $this->serializeTask($task);
         $fs = new Filesystem();
+        // TODO: Use a different location and delete the file afterwards.
         $file = '/tmp/libtask-' . time() . '-task.json';
         $fs->dumpFile($file, $jsonData);
         return $this->import($file);

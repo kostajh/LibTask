@@ -50,7 +50,7 @@ class Task
      */
     private $status;
     /**
-     * @Type("array")
+     * @Type("array<string>")
      */
     private $tags;
     /**
@@ -62,7 +62,7 @@ class Task
      */
     private $urgency;
     /**
-     * @Type("array")
+     * @Type("string")
      */
     private $depends;
     /**
@@ -89,6 +89,7 @@ class Task
 
     /**
      * Get the task Id.
+     *
      * @Type("integer")
      * @return int Taskwarrior task ID
      */
@@ -97,11 +98,23 @@ class Task
         return $this->id;
     }
 
+    /**
+     * Get the task description.
+     *
+     * @Type("string")
+     * @return string Taskwarrior task description
+     */
     public function getDescription()
     {
         return $this->description;
     }
 
+    /**
+     * Get the task due date.
+     *
+     * @Type("integer")
+     * @return int The UNIX timestamp of the task due date.
+     */
     public function getDue()
     {
         return $this->due;
@@ -113,6 +126,8 @@ class Task
      * If the value is not set, return the current time as a UNIX timestamp.
      *
      * @Type("integer")
+     *
+     * @return int UNIX timestamp of the task creation time.
      */
     public function getEntry()
     {
@@ -151,7 +166,7 @@ class Task
 
     public function getDependencies()
     {
-        return $this->depends;
+        return (is_array($this->depends)) ? implode(',', $this->depends) : (string) $this->depends;
     }
 
     public function getUdas()

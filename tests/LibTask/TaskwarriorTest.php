@@ -208,15 +208,17 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     }
 
     public function testTaskSerialize() {
-      $task = new Task();
-      $task->setDescription('Hello world');
-      $task->setUdas(array('logged' => 'false', 'estimate' => '2.5'));
-      $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-      $jsonData = $taskwarrior->serializeTask($task);
-      $this->assertRegExp('/"description":"Hello world"/', $jsonData);
+        self::deleteTestData();
+        $task = new Task();
+        $task->setDescription('Hello world');
+        $task->setUdas(array('logged' => 'false', 'estimate' => '2.5'));
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $jsonData = $taskwarrior->serializeTask($task);
+        $this->assertRegExp('/"description":"Hello world"/', $jsonData);
     }
 
     public function testTaskImport() {
+        self::deleteTestData();
         $task = new Task;
         $task->setDescription('Hello world');
         $task->setProject('life');
