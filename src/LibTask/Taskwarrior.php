@@ -194,10 +194,12 @@ class Taskwarrior
     {
         $jsonData = $this->serializeTask($task);
         $fs = new Filesystem();
-        // TODO: Use a different location and delete the file afterwards.
-        $file = '/tmp/libtask-' . time() . '-task.json';
-        $fs->dumpFile($file, $jsonData);
-        return $this->import($file);
+        // Write the serialized task to a temp file.
+        $temp_file = tempnam(sys_get_temp_dir(), 'LibTask') . '.json';
+        $fs->dumpFile($temp_file, $jsonData);
+        $result = $this->import($temp_file);
+        $fs->remove($temp_file);
+        return $result;
     }
 
     /**
