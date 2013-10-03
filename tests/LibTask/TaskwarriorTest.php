@@ -205,6 +205,11 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('life', $task->getProject());
         $this->assertArrayHasKey('uuid', $result);
         $this->assertEquals($result['uuid'], $task->getUuid());
+        // Test adding dependencies.
+        $new_task = new Task('Drink coffee');
+        $new_task->setDependencies(array($task->getUuid()));
+        $result = $taskwarrior->addTask($new_task);
+        $this->assertEquals($result['task']->getDependencies(), $task->getUuid());
     }
 
     public function testTaskSerialize() {

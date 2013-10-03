@@ -4,6 +4,7 @@ namespace LibTask\Task;
 
 use JMS\Serializer;
 use JMS\Serializer\Annotation\Type;
+use JMS\Serializer\Annotation\Accessor;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\ClassLoader\UniversalClassLoader;
 
@@ -63,6 +64,7 @@ class Task
     private $urgency;
     /**
      * @Type("string")
+     * @Accessor(getter="getDependencies")
      */
     private $depends;
     /**
