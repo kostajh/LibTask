@@ -9,7 +9,7 @@ LibTask is a PHP library for interacting with [Taskwarrior](http://www.taskwarri
 ```php
 <?php
 
-use LibTask\Task;
+use LibTask\Task\Task;
 use LibTask\Taskwarrior;
 
 // Add a task
