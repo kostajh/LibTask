@@ -68,7 +68,8 @@ class Task
      */
     private $depends;
     /**
-     * @Type("array")
+     * @Type("array<string, string>")
+     * @Accessor(getter="getUdas")
      */
     private $udas;
     /**
