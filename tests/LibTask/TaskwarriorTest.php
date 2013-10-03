@@ -197,9 +197,10 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $task = new Task('Brew coffee');
         $task->setProject('life');
         $task->setPriority('H');
+        $task->setTags(array('coffee', 'beans'));
         $result = $taskwarrior->addTask($task);
         $this->assertContains('Created task', $result);
-        $task = $taskwarrior->loadTask('Brew coffee');
+        $task = $result['task'];
         $this->assertEquals('Brew coffee', $task->getDescription());
         $this->assertEquals('H', $task->getPriority());
         $this->assertEquals('life', $task->getProject());
