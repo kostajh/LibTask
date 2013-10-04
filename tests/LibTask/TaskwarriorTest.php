@@ -208,6 +208,26 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers LibTask\Taskwarrior::save
+     */
+    public function testSave()
+    {
+        self::deleteTestData();
+        // Test creating a new task.
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $task = new Task('Drink coffee');
+        $task->setProject('mornings');
+        $task->setPriority('M');
+        $task->setTags(array('nice things', 'beverages'));
+        $result = $taskwarrior->save($task);
+        // Test updating a task.
+        $task = $result['task'];
+        $task->setDescription('Rinse coffee cup');
+        $result = $taskwarrior->save($task);
+        $this->assertEquals($result['task']->getDescription(), 'Rinse coffee cup');
+    }
+
+    /**
      * @covers LibTask\Taskwarrior::addTask
      */
     public function testAddTask()
