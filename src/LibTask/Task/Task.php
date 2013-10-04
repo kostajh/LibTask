@@ -70,6 +70,11 @@ class Task
     private $depends;
     /**
      * @Type("array<string, string>")
+     * @Accessor(getter="getAnnotations")
+     */
+    private $annotations;
+    /**
+     * @Type("array<string, string>")
      * @Inline
      * @Accessor(getter="getUdas")
      */
@@ -112,6 +117,14 @@ class Task
     public function getDescription()
     {
         return $this->description;
+    }
+
+    /**
+     * Get the task annotations.
+     */
+    public function getAnnotations()
+    {
+        return $this->annotations;
     }
 
     /**
@@ -189,6 +202,8 @@ class Task
         return $this->priority;
     }
 
+    // Setters.
+
     public function setDescription($description)
     {
         $this->description = $description;
@@ -240,5 +255,9 @@ class Task
 
     public function setUdas($udas) {
         $this->udas = $udas;
+    }
+
+    public function setAnnotations($annotations) {
+        $this->annotations = $annotations;
     }
 }

@@ -204,7 +204,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         // Add options.
         $taskwarrior->addOptions($process_builder, array('status' => 'completed'));
         $process = $process_builder->getProcess();
-        $this->assertRegExp('/status:completed/', $process->getCommandLine());
+        $this->assertRegExp('/status:"completed"/', $process->getCommandLine());
     }
 
     /**
@@ -218,7 +218,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $task = new Task('Drink coffee');
         $task->setProject('mornings');
         $task->setPriority('M');
-        $task->setTags(array('nice things', 'beverages'));
+        $task->setTags(array('nice-things', 'beverages'));
         $result = $taskwarrior->save($task);
         // Test updating a task.
         $task = $result['task'];

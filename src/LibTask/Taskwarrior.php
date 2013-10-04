@@ -118,9 +118,34 @@ class Taskwarrior
         $existing_task = $this->loadTask($task->getUuid());
         // Build a string to use with taskCommand().
         $modify = array();
-        $modify['description'] = sprintf('"%s"', $task->getDescription());
+        $modify['description'] = $task->getDescription();
         if ($task->getDue()) {
             $modify['due'] = $task->getDue();
+        }
+        if ($task->getAnnotations()) {
+            $modify['annotations'] = $task->getAnnotations();
+        }
+        if ($task->getEntry()) {
+            $modify['entry'] = $task->getEntry();
+        }
+        if ($task->getProject()) {
+            $modify['project'] = $task->getProject();
+        }
+        if ($task->getStatus()) {
+            $modify['status'] = $task->getStatus();
+        }
+        if ($task->getTags()) {
+            $modify['tags'] = implode(',', $task->getTags());
+        }
+        if ($task->getUrgency()) {
+            $modify['urgency'] = $task->getUrgency();
+        }
+        if ($task->getDependencies()) {
+            $modify['depends'] = $task->getSerializedDependencies();
+        }
+        // TODO: Add UDAs
+        if ($task->getPriority()) {
+            $modify['priority'] = $task->getPriority();
         }
         // TODO: Add support for remaining properties.
         $result = $this->taskCommand('modify', $existing_task->getUuid(), $modify);
@@ -214,8 +239,9 @@ class Taskwarrior
         foreach ($options as $key => $value) {
             if (is_int($key)) {
                 $process_builder->add($value);
-            } else {
-                $process_builder->add($key . ':' . $value);
+            }
+            else {
+                $process_builder->add(sprintf('%s:"%s"', $key, $value));
             }
         }
     }
