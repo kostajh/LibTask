@@ -1,5 +1,5 @@
 LibTask - PHP Library for Taskwarrior
-=======
+=====================================
 
 LibTask is a PHP library for interacting with [Taskwarrior](http://www.taskwarrior.org) 2.x. You can use LibTask to add, modify, delete, and view tasks in a Taskwarrior database.
 
@@ -12,6 +12,8 @@ LibTask is a PHP library for interacting with [Taskwarrior](http://www.taskwarri
 use LibTask\Task\Task;
 use LibTask\Taskwarrior;
 
+$taskwarrior = new Taskwarrior();
+
 // Add a task
 $task = new Task('Grind coffee beans');
 $task->setDue("today");
@@ -19,16 +21,20 @@ $task->setStatus("pending");
 $task->setProject('morning');
 $task->setTags(array('coffee', 'life'));
 $task->setPriority('H');
-
-$taskwarrior = new Taskwarrior();
-$taskwarrior->addTask($task);
+$taskwarrior->save($task);
 
 // Load tasks
 $tasks = $taskwarrior->loadTasks('overdue', array('status' => 'pending'));
 
 ```
 
-## Author
+References
+----------
+
+[Taskwarrior JSON Format](http://taskwarrior.org/projects/taskwarrior/wiki/JSON_format)
+
+Author
+------
 
 [Kosta Harlan](http://kostaharlan.net)
 
