@@ -67,18 +67,34 @@ class Taskwarrior
     /**
      * Import command.
      *
-     * @param string $data_file
-     * @return
+     * @param mixed $task
+     *   The task object or a data file containing JSON encoded tasks.
      */
-    public function import($data_file)
-    {
+    public function import($task) {
         $fs = new Filesystem();
-        if (!$fs->exists($data_file)) {
-            return false;
+        if (is_object($task)) {
+            $jsonData = $this->serializeTask($task);
+            // Write the serialized task to a temp file.
+            $data_file = tempnam(sys_get_temp_dir(), 'LibTask') . '.json';
+            $fs->dumpFile($data_file, $jsonData);
         }
+        else {
+            $data_file = $task;
+            // If we have a data file, check that it exists.
+            if (!$fs->exists($data_file)) {
+                return false;
+            }
+        }
+        return $this->taskCommand('import', $data_file);
+    }
 
-        $result = $this->taskCommand('import', $data_file);
-        return $result;
+    /**
+     * Wrapper around update() and add().
+     *
+     * @param Task $task
+     */
+    public function save(Task $task) {
+        return (isset($task['uuid']) && !empty($task['uuid'])) ? $this->update($task) : $this->import($task);
     }
 
     /**
@@ -88,7 +104,7 @@ class Taskwarrior
      */
     public function addTask(Task $task)
     {
-        $result = $this->importTask($task);
+        $result = $this->import($task);
         $result['uuid'] = $this->getUuidFromImport($result, $task);
         $result['task'] = $this->loadTask($result['uuid']);
         return $result;
@@ -183,23 +199,6 @@ class Taskwarrior
         foreach ($options as $option) {
             $process_builder->add($option);
         }
-    }
-
-    /**
-     * Import a single task into Taskwarrior.
-     *
-     * @param Task $task
-     */
-    public function importTask(Task $task)
-    {
-        $jsonData = $this->serializeTask($task);
-        $fs = new Filesystem();
-        // Write the serialized task to a temp file.
-        $temp_file = tempnam(sys_get_temp_dir(), 'LibTask') . '.json';
-        $fs->dumpFile($temp_file, $jsonData);
-        $result = $this->import($temp_file);
-        $fs->remove($temp_file);
-        return $result;
     }
 
     /**

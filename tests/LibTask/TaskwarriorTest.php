@@ -13,12 +13,18 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     protected $taskrc;
     protected $taskData;
 
+    /**
+     * Construct.
+     */
     public function __construct()
     {
         $this->taskData = __DIR__ . '/.task';
         $this->taskrc = __DIR__ . '/.taskrc';
     }
 
+    /**
+     * Delete test data.
+     */
     protected static function deleteTestData()
     {
         // Set up test directory.
@@ -28,6 +34,9 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         self::initializeTaskwarrior();
     }
 
+    /**
+     * Corrupt the pending.data file for testing.
+     */
     protected static function mangleTaskData()
     {
         $command = 'echo "Mangled" >> ' . __DIR__ . '/.task/pending.data';
@@ -35,6 +44,9 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $process->run();
     }
 
+    /**
+     * Create a task dir if needed.
+     */
     protected static function initializeTaskwarrior()
     {
         $process_builder = new ProcessBuilder(
@@ -47,6 +59,9 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $process->run();
     }
 
+    /**
+     * Overrides setUpBeforeClass().
+     */
     public static function setUpBeforeClass()
     {
         self::deleteTestData();
@@ -81,9 +96,14 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertFalse($taskwarrior->import('/tmp/' . md5(time())));
         // Successful import.
-        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $result = $taskwarrior->import(__DIR__ . '/sample-tasks.json');
         $this->assertEquals($result['success'], 1);
+        // Import a Task object.
+        $task = new Task('Hello world');
+        $task->setProject('life');
+        $task->setPriority('M');
+        $result = $taskwarrior->import($task);
+        $this->assertRegExp('/Hello world/', $result['output']);
     }
 
     /**
@@ -215,6 +235,9 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($result['task']->getDependencies(), $task->getUuid());
     }
 
+    /**
+     * @covers LibTask\Taskwarrior::serializeTask
+     */
     public function testTaskSerialize() {
         $task = new Task();
         $task->setDescription('Hello world');
@@ -223,15 +246,4 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $jsonData = $taskwarrior->serializeTask($task);
         $this->assertRegExp('/"description":"Hello world"/', $jsonData);
     }
-
-    public function testTaskImport() {
-        $task = new Task;
-        $task->setDescription('Hello world');
-        $task->setProject('life');
-        $task->setPriority('M');
-        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $result = $taskwarrior->importTask($task);
-        $this->assertRegExp('/Hello world/', $result['output']);
-    }
-
 }
