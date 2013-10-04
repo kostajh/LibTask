@@ -94,7 +94,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     {
         // Load non-existent file.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $this->assertFalse($taskwarrior->import('/tmp/' . md5(time())));
+        $this->assertFalse($taskwarrior->import(tempnam(sys_get_temp_dir(), 'LibTask') . '.json'));
         // Successful import.
         $result = $taskwarrior->import(__DIR__ . '/sample-tasks.json');
         $this->assertEquals($result['success'], 1);
@@ -124,7 +124,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertEmpty($taskwarrior->loadTasks(md5(time())));
         // Empty task database.
-        $taskwarrior = new Taskwarrior(md5(time()), md5(time()));
+        $taskwarrior = new Taskwarrior(tempnam(sys_get_temp_dir(), 'taskrc'), tempnam(sys_get_temp_dir(), 'taskData'));
         $this->assertEmpty($taskwarrior->loadTasks());
         // Test failing export command.
         self::mangleTaskData();
