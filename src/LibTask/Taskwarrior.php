@@ -90,6 +90,7 @@ class Taskwarrior
             // If task is an object then get the UUID and the loaded task.
             $result['uuid'] = $this->getUuidFromImport($result, $task);
             $result['task'] = $this->loadTask($result['uuid']);
+            $result['json'] = $jsonData;
         }
         return $result;
     }
@@ -123,7 +124,7 @@ class Taskwarrior
             $modify['due'] = $task->getDue();
         }
         if ($task->getAnnotations()) {
-            $modify['annotations'] = $task->getAnnotations();
+            // $modify['annotations'] = $task->getAnnotations();
         }
         if ($task->getEntry()) {
             $modify['entry'] = $task->getEntry();
@@ -239,6 +240,10 @@ class Taskwarrior
         foreach ($options as $key => $value) {
             if (is_int($key)) {
                 $process_builder->add($value);
+            }
+            if (is_array($value)) {
+                // TODO: Do something.
+                print_r($value);
             }
             else {
                 $process_builder->add(sprintf('%s:"%s"', $key, $value));

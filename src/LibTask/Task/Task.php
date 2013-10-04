@@ -8,6 +8,7 @@ use JMS\Serializer\Annotation\Accessor;
 use JMS\Serializer\Annotation\Inline;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\ClassLoader\UniversalClassLoader;
+use LibTask\Task\Annotation;
 
 /**
  * @file
@@ -69,7 +70,7 @@ class Task
      */
     private $depends;
     /**
-     * @Type("array<string, string>")
+     * @Type("array<string, LibTask\Task\Annotation>")
      * @Accessor(getter="getAnnotations")
      */
     private $annotations;
@@ -258,6 +259,11 @@ class Task
     }
 
     public function setAnnotations($annotations) {
-        $this->annotations = $annotations;
+        foreach ($annotations as $annotation) {
+            $new_annotation = new Annotation();
+            $new_annotation->setEntry($annotation['entry']);
+            $new_annotation->setDescription($annotation['description']);
+            $this->annotations[] = $new_annotation;
+        }
     }
 }

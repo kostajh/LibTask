@@ -218,6 +218,17 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $task = new Task('Drink coffee');
         $task->setProject('mornings');
         $task->setPriority('M');
+        $annotations = array(
+            array(
+                'entry' => time(),
+                'description' => 'No cream or sugar.',
+            ),
+            array(
+                'entry' => time(),
+                'description' => 'Brewed well',
+            ),
+        );
+        $task->setAnnotations($annotations);
         $task->setTags(array('nice-things', 'beverages'));
         $result = $taskwarrior->save($task);
         // Test updating a task.
