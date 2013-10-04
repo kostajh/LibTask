@@ -85,7 +85,13 @@ class Taskwarrior
                 return false;
             }
         }
-        return $this->taskCommand('import', $data_file);
+        $result = $this->taskCommand('import', $data_file);
+        if (is_object($task)) {
+            // If task is an object then get the UUID and the loaded task.
+            $result['uuid'] = $this->getUuidFromImport($result, $task);
+            $result['task'] = $this->loadTask($result['uuid']);
+        }
+        return $result;
     }
 
     /**
@@ -94,7 +100,33 @@ class Taskwarrior
      * @param Task $task
      */
     public function save(Task $task) {
-        return (isset($task['uuid']) && !empty($task['uuid'])) ? $this->update($task) : $this->import($task);
+        return ($task->getUuid()) ? $this->update($task) : $this->import($task);
+    }
+
+    /**
+     * Update a task.
+     *
+     * The Task parameter must contain a UUID for the task to be updated.
+     *
+     * @param Task $task
+     */
+    public function update(Task $task) {
+        if (!$task->getUuid()) {
+            return false;
+        }
+        // Make sure we can load a task. TODO return error if not possible.
+        $existing_task = $this->loadTask($task->getUuid());
+        // Build a string to use with taskCommand().
+        $modify = array();
+        $modify['description'] = sprintf('"%s"', $task->getDescription());
+        if ($task->getDue()) {
+            $modify['due'] = $task->getDue();
+        }
+        // TODO: Add support for remaining properties.
+        $result = $this->taskCommand('modify', $existing_task->getUuid(), $modify);
+        $result['uuid'] = $task->getUuid();
+        $result['task'] = $this->loadTask($result['uuid']);
+        return $result;
     }
 
     /**
@@ -261,6 +293,7 @@ class Taskwarrior
             'rc:' . $this->taskrc,
             'rc.data.location=' . $this->taskData,
             'rc.json.array=true',
+            'rc.confirmation=no',
         );
     }
 
