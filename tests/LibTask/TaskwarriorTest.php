@@ -218,7 +218,6 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $task->setProject('mornings');
         $task->setPriority('M');
         $annotation_one = new Annotation('No cream or sugar');
-        $annotation_one->setDescription('No cream or sugar.');
         $annotation_two = new Annotation('Brewed strong');
         $annotation_two->setEntry(time() + 1);
         $annotations = array($annotation_one, $annotation_two);
