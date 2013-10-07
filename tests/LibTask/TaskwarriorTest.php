@@ -4,6 +4,7 @@ namespace Taskwarrior;
 
 use LibTask\Taskwarrior;
 use LibTask\Task\Task;
+use LibTask\Task\Annotation;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
 
@@ -199,8 +200,6 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     {
         $process_builder = new ProcessBuilder();
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        // Test failing to add options.
-        $this->assertFalse($taskwarrior->addOptions($process_builder));
         // Add options.
         $taskwarrior->addOptions($process_builder, array('status' => 'completed'));
         $process = $process_builder->getProcess();
@@ -218,24 +217,33 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $task = new Task('Drink coffee');
         $task->setProject('mornings');
         $task->setPriority('M');
-        $annotations = array(
-            array(
-                'entry' => time(),
-                'description' => 'No cream or sugar.',
-            ),
-            array(
-                'entry' => time(),
-                'description' => 'Brewed well',
-            ),
-        );
+        $annotation_one = new Annotation('No cream or sugar');
+        $annotation_one->setDescription('No cream or sugar.');
+        $annotation_two = new Annotation('Brewed strong');
+        $annotation_two->setEntry(time() + 1);
+        $annotations = array($annotation_one, $annotation_two);
         $task->setAnnotations($annotations);
         $task->setTags(array('nice-things', 'beverages'));
         $result = $taskwarrior->save($task);
         // Test updating a task.
         $task = $result['task'];
         $task->setDescription('Rinse coffee cup');
+        $annotation = new Annotation('Strong');
+        $task->setAnnotations(array($annotation));
         $result = $taskwarrior->save($task);
         $this->assertEquals($result['task']->getDescription(), 'Rinse coffee cup');
+    }
+
+    /**
+     * @covers LibTask\Taskwarrior::annotate
+     */
+    public function testAnnotate()
+    {
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $task = $taskwarrior->loadTask('Rinse coffee cup');
+        $annotation = new Annotation('Delicious coffee.');
+        $result = $taskwarrior->annotate($task, $annotation);
+        $this->assertEquals('1', $result['success']);
     }
 
     /**
@@ -243,7 +251,6 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddTask()
     {
-        self::deleteTestData();
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $task = new Task('Brew coffee');
         $task->setProject('life');

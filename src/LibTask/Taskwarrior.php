@@ -12,6 +12,7 @@ use JMS\Serializer\Annotation\Type;
 use JMS\Serializer\Handler\HandlerRegistry;
 use JMS\Serializer\Exception\RuntimeException;
 use LibTask\Task\Task;
+use LibTask\Task\Annotation;
 use LibTask\TaskSerializeHandler;
 use LibTask\TaskSerializeSubscriber;
 
@@ -123,9 +124,8 @@ class Taskwarrior
         if ($task->getDue()) {
             $modify['due'] = $task->getDue();
         }
-        if ($task->getAnnotations()) {
-            // $modify['annotations'] = $task->getAnnotations();
-        }
+        // Taskwarrior doesn't support adding annotations via `modify`.
+        $annotations = $task->getAnnotations();
         if ($task->getEntry()) {
             $modify['entry'] = $task->getEntry();
         }
@@ -150,9 +150,22 @@ class Taskwarrior
         }
         // TODO: Add support for remaining properties.
         $result = $this->taskCommand('modify', $existing_task->getUuid(), $modify);
+        // Add annotations if any.
+        if (count($annotations)) {
+            foreach ($annotations as $annotation) {
+                $this->annotate($task, $annotation);
+            }
+        }
         $result['uuid'] = $task->getUuid();
         $result['task'] = $this->loadTask($result['uuid']);
         return $result;
+    }
+
+    /**
+     * Annotate a task.
+     */
+    public function annotate(Task $task, Annotation $annotation) {
+        return $this->taskCommand('annotate', $task->getUuid(), $annotation->getDescription());
     }
 
     /**
@@ -234,12 +247,13 @@ class Taskwarrior
      */
     public function addOptions(ProcessBuilder &$process_builder, $options = array())
     {
-        if (!count($options)) {
-            return false;
+        if (!is_array($options) && is_string($options)) {
+            $process_builder->add($options);
+            return $this;
         }
         foreach ($options as $key => $value) {
             if (is_int($key)) {
-                $process_builder->add($value);
+                $process_builder->add(sprintf("%s", $value));
             }
             if (is_array($value)) {
                 // TODO: Do something.

@@ -70,8 +70,8 @@ class Task
      */
     private $depends;
     /**
-     * @Type("array<string, LibTask\Task\Annotation>")
-     * @Accessor(getter="getAnnotations")
+     * @Type("array<LibTask\Task\Annotation>")
+     * @Accessor(getter="getAnnotations", setter="setAnnotations")
      */
     private $annotations;
     /**
@@ -259,11 +259,6 @@ class Task
     }
 
     public function setAnnotations($annotations) {
-        foreach ($annotations as $annotation) {
-            $new_annotation = new Annotation();
-            $new_annotation->setEntry($annotation['entry']);
-            $new_annotation->setDescription($annotation['description']);
-            $this->annotations[] = $new_annotation;
-        }
+        $this->annotations = $annotations;
     }
 }
