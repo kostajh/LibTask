@@ -16,11 +16,12 @@ $taskwarrior = new Taskwarrior();
 
 // Add a task
 $task = new Task('Grind coffee beans');
-$task->setDue("today");
-$task->setStatus("pending");
-$task->setProject('morning');
-$task->setTags(array('coffee', 'life'));
-$task->setPriority('H');
+$task
+  ->setDue("today");
+  ->setStatus("pending");
+  ->setProject('morning');
+  ->setTags(array('coffee', 'life'));
+  ->setPriority('H');
 $taskwarrior->save($task);
 
 // Load tasks
