@@ -57,6 +57,10 @@ class Task
     /**
      * @Type("string")
      */
+    private $start;
+    /**
+     * @Type("string")
+     */
     private $uuid;
     /**
      * @Type("double")
@@ -107,6 +111,14 @@ class Task
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * Get the task start time.
+     */
+    public function getStart()
+    {
+        return $this->start;
     }
 
     /**
@@ -268,6 +280,12 @@ class Task
     {
         $this->uuid = $uuid;
 
+        return $this;
+    }
+
+    public function setStart($start)
+    {
+        $this->start = $start;
         return $this;
     }
 

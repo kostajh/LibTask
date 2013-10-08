@@ -29,6 +29,7 @@ class TaskDeserializeSubscriber implements EventSubscriberInterface
             'annotations',
             'modified',
             'project',
+            'start',
             'status',
             'tags',
             'uuid',
