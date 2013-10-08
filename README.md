@@ -22,8 +22,7 @@ $task
   ->setProject('morning');
   ->setTags(array('coffee', 'life'));
   ->setPriority('H');
-$response = $taskwarrior->save($task)
-  ->getResponse();
+$response = $taskwarrior->save($task)->getResponse();
 
 // Load tasks
 $tasks = $taskwarrior->loadTasks('overdue', array('status' => 'pending'));
