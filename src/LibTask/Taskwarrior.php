@@ -128,6 +128,22 @@ class Taskwarrior
     }
 
     /**
+     * `done` command.
+     *
+     * @param string $uuid
+     */
+    public function complete($uuid) {
+        return $this->taskCommand('done', $uuid);
+    }
+
+    /**
+     * `delete` command.
+     */
+    public function delete($uuid) {
+        return $this->taskCommand('delete', $uuid);
+    }
+
+    /**
      * Wrapper around update() and add().
      *
      * @param Task $task

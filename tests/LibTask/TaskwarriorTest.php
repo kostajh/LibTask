@@ -279,6 +279,36 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers LibTask\Taskwarrior::complete
+     */
+    public function testCompleteTask()
+    {
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $task = new Task('Finish LibTask');
+        $result = $taskwarrior->addTask($task)->getResponse();
+        $response = $taskwarrior->complete($result['task']->getUuid())->getResponse();
+        $this->assertContains('Completed task', $response['output']);
+        $this->assertEquals(1, $response['success']);
+        $this->assertEquals($result['task']->getUuid(), $response['uuid']);
+        $done_task = $taskwarrior->loadTask($result['task']->getUuid());
+        $this->assertEquals($done_task->getStatus(), 'completed');
+    }
+
+    /**
+     * @covers LibTask\Taskwarrior::delete
+     */
+    public function testDeleteTask()
+    {
+        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $task = $taskwarrior->loadTask('Finish LibTask', array('status' => 'completed'));
+        $response = $taskwarrior->delete($task->getUuid())->getResponse();
+        $this->assertContains('Deleting task', $response['output']);
+        $this->assertEquals(1, $response['success']);
+        $deleted_task = $taskwarrior->loadTask($task->getUuid());
+        $this->assertEquals($deleted_task->getStatus(), 'deleted');
+    }
+
+    /**
      * @covers LibTask\Taskwarrior::serializeTask
      */
     public function testTaskSerialize() {
