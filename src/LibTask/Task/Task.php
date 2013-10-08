@@ -6,8 +6,6 @@ use JMS\Serializer;
 use JMS\Serializer\Annotation\Type;
 use JMS\Serializer\Annotation\Accessor;
 use JMS\Serializer\Annotation\Inline;
-use Doctrine\Common\Annotations\AnnotationRegistry;
-use Symfony\Component\ClassLoader\UniversalClassLoader;
 use LibTask\Task\Annotation;
 
 /**
@@ -96,6 +94,7 @@ class Task
         if ($description) {
             $this->setDescription($description);
         }
+
         return $this;
     }
 
@@ -209,70 +208,94 @@ class Task
     public function setDescription($description)
     {
         $this->description = $description;
+
         return $this;
     }
 
     public function setPriority($priority)
     {
         $this->priority = $priority;
+
         return $this;
     }
 
-    public function setDue($due) {
+    public function setDue($due)
+    {
         $this->due = (is_string($due)) ? strtotime($due) : $due;
+
         return $this;
     }
 
-    public function setEntry($entry) {
+    public function setEntry($entry)
+    {
         $this->entry = (is_string($entry)) ? strtotime($entry) : $entry;
+
         return $this;
     }
 
-    public function setModified($modified) {
+    public function setModified($modified)
+    {
         $this->modified = (is_string($modified)) ? strtotime($modified) : $modified;
+
         return $this;
     }
 
-    public function setProject($project) {
+    public function setProject($project)
+    {
         $this->project = $project;
+
         return $this;
     }
 
-    public function setStatus($status) {
+    public function setStatus($status)
+    {
         if (!in_array($status, array('pending', 'completed'))) {
             // TODO: Throw exception.
         }
         $this->status = $status;
+
         return $this;
     }
 
-    public function setTags($tags) {
+    public function setTags($tags)
+    {
         $this->tags = $tags;
+
         return $this;
     }
 
-    public function setUuid($uuid) {
+    public function setUuid($uuid)
+    {
         $this->uuid = $uuid;
+
         return $this;
     }
 
-    public function setUrgency($urgency) {
+    public function setUrgency($urgency)
+    {
         $this->urgency = $urgency;
+
         return $this;
     }
 
-    public function setDependencies($depends) {
+    public function setDependencies($depends)
+    {
         $this->depends = $depends;
+
         return $this;
     }
 
-    public function setUdas($udas) {
+    public function setUdas($udas)
+    {
         $this->udas = $udas;
+
         return $this;
     }
 
-    public function setAnnotations($annotations) {
+    public function setAnnotations($annotations)
+    {
         $this->annotations = $annotations;
+
         return $this;
     }
 }

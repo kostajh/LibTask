@@ -3,10 +3,6 @@
 namespace LibTask\Task;
 
 use JMS\Serializer\Annotation\Type;
-use JMS\Serializer\Annotation\Accessor;
-use JMS\Serializer\Annotation\Inline;
-use Doctrine\Common\Annotations\AnnotationRegistry;
-use Symfony\Component\ClassLoader\UniversalClassLoader;
 
 class Annotation
 {
@@ -28,19 +24,23 @@ class Annotation
       }
     }
 
-    public function setEntry($entry) {
+    public function setEntry($entry)
+    {
       $this->entry = $entry;
     }
 
-    public function setDescription($description) {
+    public function setDescription($description)
+    {
       $this->description = $description;
     }
 
-    public function getEntry() {
+    public function getEntry()
+    {
       return $this->entry;
     }
 
-    public function getDescription() {
+    public function getDescription()
+    {
       return $this->description;
     }
 }
