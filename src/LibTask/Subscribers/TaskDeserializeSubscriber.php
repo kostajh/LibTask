@@ -20,6 +20,9 @@ class TaskDeserializeSubscriber implements EventSubscriberInterface
     {
         // Add UDAs to the UDA array.
         $data = $event->getData();
+        if (!is_array($data)) {
+            return;
+        }
         // Core task properties. Everything else is a UDA.
         $task_vars = array(
             'id',

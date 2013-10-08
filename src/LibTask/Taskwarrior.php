@@ -171,6 +171,9 @@ class Taskwarrior
         }
         // Make sure we can load a task. TODO return error if not possible.
         $existing_task = $this->loadTask($task->getUuid());
+        if (!$existing_task) {
+            return false;
+        }
         // Build a string to use with taskCommand().
         $modify = array();
         $modify['description'] = $task->getDescription();
@@ -304,8 +307,11 @@ class Taskwarrior
     {
         $data = $this->taskCommand('export', $filter, $options)
             ->getResponse();
-        if (!$data['success'] || $data['exit_code'] != 0 || !$data['output']) {
+        if (!$data['success'] || $data['exit_code'] != 0) {
             return false;
+        }
+        if (!$data['output']) {
+            return array();
         }
         $builder = SerializerBuilder::create();
         $builder
@@ -318,7 +324,7 @@ class Taskwarrior
         try {
             $object = $serializer->deserialize($data['output'], 'ArrayCollection<Libtask\Task\Task>', 'json');
         } catch (RuntimeException $e) {
-            echo 'Malformed JSON';
+            echo 'Malformed JSON: ' . $data['output'];
 
             return false;
         }
