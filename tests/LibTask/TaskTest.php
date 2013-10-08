@@ -20,6 +20,23 @@ class TaskTest extends  \PHPUnit_Framework_TestCase
      * Test creating a Task.
      *
      * @covers LibTask\Task\Task::__construct
+     * @covers LibTask\Task\Task::setDue
+     * @covers LibTask\Task\Task::setEntry
+     * @covers LibTask\Task\Task::setModified
+     * @covers LibTask\Task\Task::setStatus
+     * @covers LibTask\Task\Task::setUrgency
+     * @covers LibTask\Task\Task::setProject
+     * @covers LibTask\Task\Task::setTags
+     * @covers LibTask\Task\Task::setPriority
+     * @covers LibTask\Task\Task::getDue
+     * @covers LibTask\Task\Task::getEntry
+     * @covers LibTask\Task\Task::getModified
+     * @covers LibTask\Task\Task::getStatus
+     * @covers LibTask\Task\Task::getUrgency
+     * @covers LibTask\Task\Task::getProject
+     * @covers LibTask\Task\Task::getTags
+     * @covers LibTask\Task\Task::getPriority
+     * @covers LibTask\Task\Task::getId
      */
     public function testTask()
     {
@@ -47,5 +64,7 @@ class TaskTest extends  \PHPUnit_Framework_TestCase
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $result = $taskwarrior->addTask($task)->getResponse();
         $this->assertEquals('1' ,$result['success']);
+        $task = $result['task'];
+        $this->assertEquals(4, $task->getId());
     }
 }

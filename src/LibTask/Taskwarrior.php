@@ -399,7 +399,7 @@ class Taskwarrior
         $this->addOptions($process_builder, $options);
         $process_builder->setPrefix('task');
         $process = $process_builder->getProcess();
-        $process->setTimeout(60);
+        $process->setTimeout(360);
         $process->start();
         while ($process->isRunning()) {
             // Waiting for process to finish.
