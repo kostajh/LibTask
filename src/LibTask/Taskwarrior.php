@@ -197,7 +197,12 @@ class Taskwarrior
         if ($task->getDependencies()) {
             $modify['depends'] = $task->getSerializedDependencies();
         }
-        // TODO: Add UDAs
+        if ($task->getUdas()) {
+            $udas = $task->getUdas();
+            foreach ($udas as $key => $value) {
+                $modify[$key] = $value;
+            }
+        }
         if ($task->getPriority()) {
             $modify['priority'] = $task->getPriority();
         }

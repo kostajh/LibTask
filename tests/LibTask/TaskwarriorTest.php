@@ -225,16 +225,20 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $annotations = array($annotation_one, $annotation_two);
         $task->setAnnotations($annotations);
         $task->setTags(array('nice-things', 'beverages'));
+        $task->setUdas(array('estimate' => '1day'));
         $result = $taskwarrior
             ->save($task)
             ->getResponse();
         // Test updating a task.
         $task = $result['task'];
         $task->setDescription('Rinse coffee cup');
+        $task->setUdas(array('estimate' => '2days'));
         $annotation = new Annotation('Strong');
         $task->setAnnotations(array($annotation));
         $result = $taskwarrior->save($task);
         $this->assertEquals($result['task']->getDescription(), 'Rinse coffee cup');
+        $udas = $result['task']->getUdas();
+        $this->assertEquals($udas['estimate'], '172800');
     }
 
     /**

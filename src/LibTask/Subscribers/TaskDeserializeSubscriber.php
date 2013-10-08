@@ -39,7 +39,7 @@ class TaskDeserializeSubscriber implements EventSubscriberInterface
         );
         $udas = array();
         foreach ($data as $key => $value) {
-            if (!in_array($key, $task_vars)) {
+            if (!in_array($key, $task_vars) && strpos($key, 'annotation_') !== 0) {
                 $udas[$key] = $value;
             }
         }
