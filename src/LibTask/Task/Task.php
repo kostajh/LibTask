@@ -73,7 +73,7 @@ class Task
      */
     private $annotations;
     /**
-     * @Type("array<string, string>")
+     * @Type("array")
      * @Inline
      * @Accessor(getter="getUdas")
      */

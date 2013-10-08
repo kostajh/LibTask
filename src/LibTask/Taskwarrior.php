@@ -8,10 +8,12 @@ use Symfony\Component\Filesystem\Filesystem;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use JMS\Serializer\SerializerBuilder;
 use JMS\Serializer\Handler\HandlerRegistry;
+use JMS\Serializer\EventDispatcher\EventDispatcher;
 use JMS\Serializer\Exception\RuntimeException;
 use LibTask\Task\Task;
 use LibTask\Task\Annotation;
 use LibTask\TaskSerializeHandler;
+use LibTask\Subscribers\TaskDeserializeSubscriber;
 
 AnnotationRegistry::registerLoader('class_exists');
 
@@ -288,7 +290,13 @@ class Taskwarrior
         if (!$data['success'] || $data['exit_code'] != 0 || !$data['output']) {
             return false;
         }
-        $serializer = SerializerBuilder::create()->build();
+        $builder = SerializerBuilder::create();
+        $builder
+            ->configureListeners(function(EventDispatcher $dispatcher) {
+                $dispatcher->addSubscriber(new TaskDeserializeSubscriber());
+            })
+        ;
+        $serializer = $builder->build();
         $tasks = array();
         try {
             $object = $serializer->deserialize($data['output'], 'ArrayCollection<Libtask\Task\Task>', 'json');

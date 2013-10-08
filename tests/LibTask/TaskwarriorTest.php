@@ -269,6 +269,9 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('H', $task->getPriority());
         $this->assertEquals('life', $task->getProject());
         $this->assertArrayHasKey('uuid', $result);
+        $udas = $task->getUdas();
+        $this->assertEquals($udas['estimate'], '3days');
+        $this->assertEquals($udas['logged'], 'false');
         $this->assertEquals($result['uuid'], $task->getUuid());
         $udas = $task->getUdas();
         // Test adding dependencies.
@@ -318,5 +321,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $jsonData = $taskwarrior->serializeTask($task);
         $this->assertRegExp('/"description":"Hello world"/', $jsonData);
+        $this->assertRegExp('/"logged":"false"/', $jsonData);
+        $this->assertRegExp('/"estimate":"1day"/', $jsonData);
     }
 }
