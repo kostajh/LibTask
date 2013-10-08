@@ -85,6 +85,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testGetVersion()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $version = $taskwarrior->getVersion();
         $this->assertRegExp('/2./', $taskwarrior->getVersion());
     }
 
@@ -97,13 +98,14 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertFalse($taskwarrior->import(tempnam(sys_get_temp_dir(), 'LibTask') . '.json'));
         // Successful import.
-        $result = $taskwarrior->import(__DIR__ . '/sample-tasks.json');
+        $result = $taskwarrior->import(__DIR__ . '/sample-tasks.json')
+            ->getResponse();
         $this->assertEquals($result['success'], 1);
         // Import a Task object.
         $task = new Task('Hello world');
         $task->setProject('life');
         $task->setPriority('M');
-        $result = $taskwarrior->import($task);
+        $result = $taskwarrior->import($task)->getResponse();
         $this->assertRegExp('/Hello world/', $result['output']);
     }
 
@@ -152,7 +154,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     {
         // Test a basic command.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $ret = $taskwarrior->taskCommand('list');
+        $ret = $taskwarrior->taskCommand('list')->getResponse();
         $this->assertNotEmpty($ret);
         $this->assertNotEmpty($ret['output']);
         $this->assertEquals($ret['exit_code'], 0);
@@ -162,7 +164,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertFalse($taskwarrior->taskCommand());
         // Provide filter.
-        $ret = $taskwarrior->taskCommand('list', '+test');
+        $ret = $taskwarrior->taskCommand('list', '+test')->getResponse();
         $this->assertEquals($ret['success'], 1);
     }
 
@@ -223,7 +225,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $annotations = array($annotation_one, $annotation_two);
         $task->setAnnotations($annotations);
         $task->setTags(array('nice-things', 'beverages'));
-        $result = $taskwarrior->save($task);
+        $result = $taskwarrior->save($task)->getResponse();
         // Test updating a task.
         $task = $result['task'];
         $task->setDescription('Rinse coffee cup');
@@ -241,7 +243,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $task = $taskwarrior->loadTask('Rinse coffee cup');
         $annotation = new Annotation('Delicious coffee.');
-        $result = $taskwarrior->annotate($task, $annotation);
+        $result = $taskwarrior->annotate($task, $annotation)->getResponse();
         $this->assertEquals('1', $result['success']);
     }
 
@@ -258,7 +260,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
             ->setProject('life')
             ->setTags(array('coffee', 'beans'))
             ->setUdas(array('logged' => 'false', 'estimate' => '3days'));
-        $result = $taskwarrior->addTask($task);
+        $result = $taskwarrior->addTask($task)->getResponse();
         $this->assertContains('Created task', $result);
         $task = $result['task'];
         $this->assertEquals('Brew coffee', $task->getDescription());
@@ -270,7 +272,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         // Test adding dependencies.
         $new_task = new Task('Drink coffee');
         $new_task->setDependencies(array($task->getUuid()));
-        $result = $taskwarrior->addTask($new_task);
+        $result = $taskwarrior->addTask($new_task)->getResponse();
         $this->assertEquals($result['task']->getDependencies(), $task->getUuid());
     }
 

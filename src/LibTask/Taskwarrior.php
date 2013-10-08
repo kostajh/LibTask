@@ -41,6 +41,8 @@ class Taskwarrior
     protected $taskData = null;
     protected $taskrc = null;
     protected $rcOptions = array();
+    protected $taskwarriorVersion = null;
+    protected $taskwarriorResponse = array();
 
     /**
      * @param string $taskrc
@@ -55,14 +57,42 @@ class Taskwarrior
     }
 
     /**
+     * Get the response from Taskwarrior after issuing a command.
+     * @return array
+     */
+    public function getResponse()
+    {
+        return $this->taskwarriorResponse;
+    }
+
+    /**
+     * Returns the output from the Taskwarrior command.
+     * @return string
+     */
+    public function getOutput()
+    {
+        return isset($this->taskwarriorResponse['output']) ? $this->taskwarriorResponse['output'] : null;
+    }
+
+    /**
      * Get the Taskwarrior version.
      * @return string
      */
     public function getVersion()
     {
-        $result = $this->taskCommand('_version');
+        if (!$this->taskwarriorVersion) {
+            $this->setVersion();
+        }
+        return $this->taskwarriorVersion;
+    }
 
-        return $result['output'];
+    /**
+     * Set the Taskwarrior version.
+     */
+    public function setVersion()
+    {
+        $this->taskwarriorVersion = $this->taskCommand('_version')->getOutput();
+        return $this;
     }
 
     /**
@@ -86,14 +116,15 @@ class Taskwarrior
                 return false;
             }
         }
-        $result = $this->taskCommand('import', $data_file);
+        $result = $this->taskCommand('import', $data_file)->getResponse();
         if (is_object($task)) {
             // If task is an object then get the UUID and the loaded task.
-            $result['uuid'] = $this->getUuidFromImport($result, $task);
-            $result['task'] = $this->loadTask($result['uuid']);
-            $result['json'] = $jsonData;
+            $this->taskwarriorResponse['uuid'] = $this->getUuidFromImport($task);
+            $this->taskwarriorResponse['task'] = $this->loadTask($this->taskwarriorResponse['uuid']);
+            $this->taskwarriorResponse['json'] = $jsonData;
         }
-        return $result;
+        $this->setResponse($result);
+        return $this;
     }
 
     /**
@@ -149,7 +180,7 @@ class Taskwarrior
             $modify['priority'] = $task->getPriority();
         }
         // TODO: Add support for remaining properties.
-        $result = $this->taskCommand('modify', $existing_task->getUuid(), $modify);
+        $result = $this->taskCommand('modify', $existing_task->getUuid(), $modify)->getResponse();
         // Add annotations if any.
         if (count($annotations)) {
             foreach ($annotations as $annotation) {
@@ -175,14 +206,16 @@ class Taskwarrior
      */
     public function addTask(Task $task)
     {
-        $result = $this->import($task);
-        $result['uuid'] = $this->getUuidFromImport($result, $task);
-        $result['task'] = $this->loadTask($result['uuid']);
-        return $result;
+        $response = $this->import($task)
+            ->getResponse();
+        $response['uuid'] = $this->getUuidFromImport($task);
+        $this->setResponse(array('task' => $this->loadTask($response['uuid'])));
+        return $this;
     }
 
-    public function getUuidFromImport($result, $task) {
+    public function getUuidFromImport($task) {
         // Parse the output and get the task UUID.
+        $result = $this->getResponse();
         $output = explode(' ', $result['output']);
         $parts = explode(' ', $result['command_line']);
         $intersect = array_intersect($output, $parts);
@@ -224,7 +257,8 @@ class Taskwarrior
      */
     public function loadTasks($filter = NULL, $options = array())
     {
-        $data = $this->taskCommand('export', $filter, $options);
+        $data = $this->taskCommand('export', $filter, $options)
+            ->getResponse();
         if (!$data['success'] || $data['exit_code'] != 0 || !$data['output']) {
             return false;
         }
@@ -263,6 +297,7 @@ class Taskwarrior
                 $process_builder->add(sprintf('%s:"%s"', $key, $value));
             }
         }
+        return $this;
     }
 
     /**
@@ -276,6 +311,7 @@ class Taskwarrior
         foreach ($options as $option) {
             $process_builder->add($option);
         }
+        return $this;
     }
 
     /**
@@ -293,6 +329,7 @@ class Taskwarrior
         if (!$command) {
             return false;
         }
+        $this->setResponse(array());
         $process_builder = new ProcessBuilder();
         $this->addRcOptions($process_builder, array_merge($this->rcOptions, $this->getGlobalRcOptions()));
         if ($filter) {
@@ -304,13 +341,23 @@ class Taskwarrior
         $process = $process_builder->getProcess();
         $process->run();
 
-        return array(
+        $response = array(
             'output' => $process->getOutput(),
             'error_output' => $process->getErrorOutput(),
             'command_line' => $process->getCommandLine(),
             'success' => $process->isSuccessful(),
             'exit_code' => $process->getExitCode(),
         );
+        return $this->setResponse($response);
+    }
+
+    /**
+     * Set the taskwarriorResponse variable.
+     * @param array $response
+     */
+    public function setResponse($response) {
+        $this->taskwarriorResponse = array_merge($this->taskwarriorResponse, $response);
+        return $this;
     }
 
     /**

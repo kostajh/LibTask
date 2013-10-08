@@ -44,7 +44,7 @@ class TaskTest extends  \PHPUnit_Framework_TestCase
         $this->assertEquals('H', $task->getPriority());
         // Test adding the task.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $result = $taskwarrior->addTask($task);
+        $result = $taskwarrior->addTask($task)->getResponse();
         $this->assertEquals('1' ,$result['success']);
     }
 }
