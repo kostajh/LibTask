@@ -402,6 +402,22 @@ class Taskwarrior
     }
 
     /**
+     * Start a task.
+     */
+    public function start($uuid)
+    {
+        return $this->taskCommand('start', $uuid);
+    }
+
+    /**
+     * Stop a task.
+     */
+    public function stop($uuid)
+    {
+        return $this->taskCommand('stop', $uuid);
+    }
+
+    /**
      * Serializes a task to JSON for importing into Taskwarrior.
      *
      * @param Task $task
