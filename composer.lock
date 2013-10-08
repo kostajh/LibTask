@@ -494,12 +494,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/schmittjoh/serializer.git",
-                "reference": "ad2153e3aeaa420f50cd97b3551d476509c1b68d"
+                "reference": "d4bf45027f5843ea5984d6246e59963ae4b3ebf2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/schmittjoh/serializer/zipball/ad2153e3aeaa420f50cd97b3551d476509c1b68d",
-                "reference": "ad2153e3aeaa420f50cd97b3551d476509c1b68d",
+                "url": "https://api.github.com/repos/schmittjoh/serializer/zipball/d4bf45027f5843ea5984d6246e59963ae4b3ebf2",
+                "reference": "d4bf45027f5843ea5984d6246e59963ae4b3ebf2",
                 "shasum": ""
             },
             "require": {
@@ -553,7 +553,7 @@
                 "serialization",
                 "xml"
             ],
-            "time": "2013-09-26 06:27:00"
+            "time": "2013-10-07 20:57:22"
         },
         {
             "name": "phpcollection/phpcollection",

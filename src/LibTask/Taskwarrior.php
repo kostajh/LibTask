@@ -12,7 +12,6 @@ use JMS\Serializer\EventDispatcher\EventDispatcher;
 use JMS\Serializer\Exception\RuntimeException;
 use LibTask\Task\Task;
 use LibTask\Task\Annotation;
-use LibTask\TaskSerializeHandler;
 use LibTask\Subscribers\TaskDeserializeSubscriber;
 
 AnnotationRegistry::registerLoader('class_exists');
@@ -449,9 +448,6 @@ class Taskwarrior
     {
         $serializer = SerializerBuilder::create()
         ->addDefaultHandlers()
-        ->configureHandlers(function(HandlerRegistry $registry) {
-            $registry->registerSubscribingHandler(new TaskSerializeHandler());
-            })
         ->build();
         $jsonContent = $serializer->serialize($task, 'json');
 
