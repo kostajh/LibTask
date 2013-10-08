@@ -243,6 +243,18 @@ class Taskwarrior
         return $this;
     }
 
+    /**
+     * Get the total active time for a task.
+     */
+    public function getTaskActiveTime($uuid)
+    {
+        $task_info_output = $this->taskCommand('info', $uuid)->getOutput();
+        if (strpos($task_info_output, 'Total active time')) {
+            $task_info_output_components = explode(' ', $task_info_output);
+            return trim(end($task_info_output_components));
+        }
+    }
+
     public function getUuidFromImport($task)
     {
         // Parse the output and get the task UUID.
