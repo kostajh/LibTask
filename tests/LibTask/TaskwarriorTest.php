@@ -225,7 +225,9 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $annotations = array($annotation_one, $annotation_two);
         $task->setAnnotations($annotations);
         $task->setTags(array('nice-things', 'beverages'));
-        $result = $taskwarrior->save($task)->getResponse();
+        $result = $taskwarrior
+            ->save($task)
+            ->getResponse();
         // Test updating a task.
         $task = $result['task'];
         $task->setDescription('Rinse coffee cup');
