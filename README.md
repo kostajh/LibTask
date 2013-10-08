@@ -17,10 +17,10 @@ $taskwarrior = new Taskwarrior();
 // Add a task
 $task = new Task('Grind coffee beans');
 $task
-  ->setDue("today");
-  ->setStatus("pending");
-  ->setProject('morning');
-  ->setTags(array('coffee', 'life'));
+  ->setDue("today")
+  ->setStatus("pending")
+  ->setProject('morning')
+  ->setTags(array('coffee', 'life'))
   ->setPriority('H');
 $response = $taskwarrior->save($task)->getResponse();
 
