@@ -44,7 +44,7 @@ class TaskDeserializeSubscriber implements EventSubscriberInterface
             }
         }
         $data['udas'] = $udas;
-        if ($data['udas']) {
+        if ($data['udas'] && isset($data['uuid']) && !empty($data['uuid'])) {
             $event->setData($data);
         }
     }
