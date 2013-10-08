@@ -314,7 +314,8 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers LibTask\Taskwarrior::serializeTask
      */
-    public function testTaskSerialize() {
+    public function testTaskSerialize()
+    {
         $task = new Task();
         $task->setDescription('Hello world');
         $task->setUdas(array('logged' => 'false', 'estimate' => '1day'));

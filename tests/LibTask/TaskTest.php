@@ -21,7 +21,8 @@ class TaskTest extends  \PHPUnit_Framework_TestCase
      *
      * @covers LibTask\Task\Task::__construct
      */
-    public function testTask() {
+    public function testTask()
+    {
         $task = new Task('Grind coffee beans');
         $task->setDue("20130831T040000Z");
         $task->setEntry("20130831T165548Z");
