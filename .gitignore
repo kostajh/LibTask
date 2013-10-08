@@ -2,3 +2,4 @@ vendor/*
 tests/LibTask/.task
 tests/LibTask/.task/*
 *.sublime*
+scratch.php
