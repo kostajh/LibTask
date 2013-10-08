@@ -402,10 +402,9 @@ class Taskwarrior
         $process->setTimeout(360);
         $process->start();
         while ($process->isRunning()) {
-            // Waiting for process to finish.
+            // Wait.
             $process->checkTimeout();
         }
-
         $response = array(
             'output' => $process->getOutput(),
             'error_output' => $process->getErrorOutput(),

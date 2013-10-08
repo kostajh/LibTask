@@ -64,7 +64,5 @@ class TaskTest extends  \PHPUnit_Framework_TestCase
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $result = $taskwarrior->addTask($task)->getResponse();
         $this->assertEquals('1' ,$result['success']);
-        $task = $result['task'];
-        $this->assertEquals(4, $task->getId());
     }
 }
