@@ -61,6 +61,10 @@ class Task
     /**
      * @Type("string")
      */
+    private $parent;
+    /**
+     * @Type("string")
+     */
     private $uuid;
     /**
      * @Type("double")
@@ -149,6 +153,11 @@ class Task
     public function getDue()
     {
         return $this->due;
+    }
+
+    public function getParent()
+    {
+        return $this->parent;
     }
 
     /**
@@ -251,6 +260,12 @@ class Task
     {
         $this->entry = (is_string($entry)) ? strtotime($entry) : $entry;
 
+        return $this;
+    }
+
+    public function setParent($parent)
+    {
+        $this->parent = $parent;
         return $this;
     }
 
