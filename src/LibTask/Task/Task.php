@@ -217,6 +217,15 @@ class Task
 
     // Setters.
 
+    /**
+     * Note, this should only be used to unset the Id.
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+
     public function setDescription($description)
     {
         $this->description = $description;
