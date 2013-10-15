@@ -210,10 +210,23 @@ class Taskwarrior
         }
         // TODO: Add support for remaining properties.
         $result = $this->taskCommand('modify', $existing_task->getUuid(), $modify)->getResponse();
-        // Add annotations if any.
-        if (count($annotations)) {
-            foreach ($annotations as $annotation) {
-                $this->annotate($task, $annotation);
+        // Add annotations if any, and if they are different from what is
+        // already there.
+        $existing_annotations = $existing_task->getAnnotations();
+        $existing_annotations_data = array();
+        foreach ($existing_annotations as $note) {
+            $existing_annotations_data[] = $note->getDescription();
+        }
+        $new_annotations = $task->getAnnotations();
+        $new_annotations_data = array();
+        foreach ($new_annotations as $note) {
+            $new_annotations_data[] = $note->getDescription();
+        }
+        $annotations_diff = array_diff($new_annotations_data, $existing_annotations_data);
+        if (count($annotations_diff)) {
+            foreach ($annotations_diff as $annotation) {
+                $note = new Annotation($annotation);
+                $this->annotate($task, $note);
             }
         }
         $result['uuid'] = $task->getUuid();
