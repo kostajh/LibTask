@@ -454,6 +454,7 @@ class Taskwarrior
         ->addDefaultHandlers()
         ->build();
         $jsonContent = $serializer->serialize($task, 'json');
+        $jsonContent = str_replace("\\/", "/", $jsonContent);
 
         return $jsonContent;
     }
