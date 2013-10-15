@@ -214,13 +214,17 @@ class Taskwarrior
         // already there.
         $existing_annotations = $existing_task->getAnnotations();
         $existing_annotations_data = array();
-        foreach ($existing_annotations as $note) {
-            $existing_annotations_data[] = $note->getDescription();
+        if (count($existing_annotations)) {
+            foreach ($existing_annotations as $note) {
+                $existing_annotations_data[] = $note->getDescription();
+            }
         }
         $new_annotations = $task->getAnnotations();
         $new_annotations_data = array();
-        foreach ($new_annotations as $note) {
-            $new_annotations_data[] = $note->getDescription();
+        if (count($new_annotations)) {
+            foreach ($new_annotations as $note) {
+                $new_annotations_data[] = $note->getDescription();
+            }
         }
         $annotations_diff = array_diff($new_annotations_data, $existing_annotations_data);
         if (count($annotations_diff)) {
