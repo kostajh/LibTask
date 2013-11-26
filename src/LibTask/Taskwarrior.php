@@ -91,6 +91,9 @@ class Taskwarrior
     public function setVersion()
     {
         $this->taskwarriorVersion = $this->taskCommand('--version')->getOutput();
+        $process = new Process('task --version');
+        $process->run();
+        $this->taskwarriorVersion = $process->getOutput();
 
         return $this;
     }
@@ -120,7 +123,7 @@ class Taskwarrior
         if (is_object($task)) {
             // If task is an object then get the UUID and the loaded task.
             $this->taskwarriorResponse['uuid'] = $this->getUuidFromImport($task);
-            $this->taskwarriorResponse['task'] = $this->loadTask($this->taskwarriorResponse['uuid']);
+            $this->taskwarriorResponse['task'] = $this->loadTask(sprintf('uuid:%s', $this->taskwarriorResponse['uuid']));
             $this->taskwarriorResponse['json'] = $jsonData;
         }
         $this->setResponse($result);
@@ -169,7 +172,7 @@ class Taskwarrior
             return false;
         }
         // Make sure we can load a task. TODO return error if not possible.
-        $existing_task = $this->loadTask($task->getUuid());
+        $existing_task = $this->loadTask(sprintf('uuid:%s', $task->getUuid()));
         if (!$existing_task) {
             return false;
         }
@@ -234,7 +237,7 @@ class Taskwarrior
             }
         }
         $result['uuid'] = $task->getUuid();
-        $result['task'] = $this->loadTask($result['uuid']);
+        $result['task'] = $this->loadTask(sprintf('uuid:%s', $result['uuid']));
 
         return $result;
     }
@@ -257,7 +260,7 @@ class Taskwarrior
         $response = $this->import($task)
             ->getResponse();
         $response['uuid'] = $this->getUuidFromImport($task);
-        $this->setResponse(array('task' => $this->loadTask($response['uuid'])));
+        $this->setResponse(array('task' => $this->loadTask(sprintf('uuid:%s', $response['uuid']))));
 
         return $this;
     }

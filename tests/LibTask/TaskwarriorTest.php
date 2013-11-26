@@ -86,7 +86,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $version = $taskwarrior->getVersion();
-        $this->assertRegExp('/2./', $taskwarrior->getVersion());
+        $this->assertRegExp('/2./', $version);
     }
 
     /**
@@ -120,7 +120,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $this->assertNotEmpty($taskwarrior->loadTasks());
         // Load tasks with filter.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $this->assertNotEmpty($taskwarrior->loadTasks('1'));
+        $this->assertNotEmpty($taskwarrior->loadTasks('id:1'));
         // Load tasks with options.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $this->assertNotEmpty($taskwarrior->loadTasks(null, array('status' => 'pending')));
@@ -145,7 +145,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $taskwarrior->import(__DIR__ . '/sample-tasks.json');
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $this->assertNotEmpty($taskwarrior->loadTask(1));
+        $this->assertNotEmpty($taskwarrior->loadTask('id:1'));
     }
 
     /**
@@ -249,9 +249,9 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testAnnotate()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $task = $taskwarrior->loadTask('Rinse coffee cup');
+        $tasks = $taskwarrior->loadTasks();
+        $task = $taskwarrior->loadTask('description:"Rinse coffee cup"');
         $annotation = new Annotation('Delicious coffee.');
-        $this->assertInstanceOf('LibTask\Task\Task', $task);
         $result = $taskwarrior->annotate($task, $annotation)->getResponse();
         $this->assertEquals('1', $result['success']);
     }
@@ -303,7 +303,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('Completed task', $response['output']);
         $this->assertEquals(1, $response['success']);
         $this->assertEquals($result['task']->getUuid(), $response['uuid']);
-        $done_task = $taskwarrior->loadTask($result['task']->getUuid());
+        $done_task = $taskwarrior->loadTask(sprintf('uuid:%s', $result['task']->getUuid()));
         $this->assertInstanceOf('LibTask\Task\Task', $done_task);
         $this->assertEquals($done_task->getStatus(), 'completed');
     }
@@ -314,12 +314,13 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testDeleteTask()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $task = $taskwarrior->loadTask('Finish LibTask', array('status' => 'completed'));
+        $task = $taskwarrior->loadTask('description:"Finish LibTask"', array('status' => 'completed'));
         $this->assertInstanceOf('LibTask\Task\Task', $task);
-        $response = $taskwarrior->delete($task->getUuid())->getResponse();
+        $response = $taskwarrior->delete($task->getUuid())
+          ->getResponse();
         $this->assertContains('Deleting task', $response['output']);
         $this->assertEquals(1, $response['success']);
-        $deleted_task = $taskwarrior->loadTask($task->getUuid());
+        $deleted_task = $taskwarrior->loadTask(sprintf('uuid:%s', $task->getUuid()));
         $this->assertEquals($deleted_task->getStatus(), 'deleted');
     }
 
