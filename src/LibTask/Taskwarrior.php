@@ -90,7 +90,7 @@ class Taskwarrior
      */
     public function setVersion()
     {
-        $this->taskwarriorVersion = $this->taskCommand('_version')->getOutput();
+        $this->taskwarriorVersion = $this->taskCommand('--version')->getOutput();
 
         return $this;
     }
