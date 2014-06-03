@@ -304,12 +304,15 @@ class Taskwarrior
      *
      * @return array
      */
-    public function loadTask($filter = NULL, $options = array())
+    public function loadTask($filter = NULL, $options = array(), $json = false)
     {
-        $tasks = $this->loadTasks($filter, $options);
-        if (!is_array($tasks) || !count($tasks)) {
+        $tasks = $this->loadTasks($filter, $options, $json);
+        if (!$json && (!is_array($tasks) || !count($tasks))) {
             // TODO: Throw exception.
             return false;
+        }
+        elseif ($json) {
+          $tasks = json_decode($tasks);
         }
 
         return array_shift($tasks);
@@ -320,9 +323,10 @@ class Taskwarrior
      *
      * @param  string $filter
      * @param  array  $options
+     * @param  bool $json
      * @return array
      */
-    public function loadTasks($filter = NULL, $options = array())
+    public function loadTasks($filter = NULL, $options = array(), $json = FALSE)
     {
         $data = $this->taskCommand('export', $filter, $options)
             ->getResponse();
@@ -331,6 +335,10 @@ class Taskwarrior
         }
         if (!$data['output']) {
             return array();
+        }
+        // Just return the JSON data.
+        if ($json) {
+          return $data['output'];
         }
         $builder = SerializerBuilder::create();
         $builder
