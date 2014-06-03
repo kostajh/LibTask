@@ -313,6 +313,7 @@ class Taskwarrior
         }
         elseif ($json) {
           $tasks = json_decode($tasks);
+          return json_encode(array_shift($tasks));
         }
 
         return array_shift($tasks);
