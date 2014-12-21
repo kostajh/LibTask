@@ -2,19 +2,15 @@
 
 namespace LibTask;
 
-use Symfony\Component\Process\Process;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Process\ProcessBuilder;
 use Symfony\Component\Filesystem\Filesystem;
-use Doctrine\Common\Annotations\AnnotationRegistry;
 use JMS\Serializer\SerializerBuilder;
-use JMS\Serializer\Handler\HandlerRegistry;
 use JMS\Serializer\EventDispatcher\EventDispatcher;
 use JMS\Serializer\Exception\RuntimeException;
 use LibTask\Task\Task;
 use LibTask\Task\Annotation;
 use LibTask\Subscribers\TaskDeserializeSubscriber;
-
-AnnotationRegistry::registerLoader('class_exists');
 
 /**
  * @file
@@ -26,31 +22,47 @@ AnnotationRegistry::registerLoader('class_exists');
  *
  * Methods for interacting with a Taskwarrior database.
  *
- * @author  Kosta Harlan <kosta@embros.org>
+ * @author Kosta Harlan <kosta@embros.org>
  */
 class Taskwarrior
 {
-
     /**
-     * Path to Taskwarrior client data.
+     * Path to TaskWarrior client data.
      *
-     * @var string
+     * @var null|string
      */
     protected $taskData = null;
+
+    /**
+     * Path to TaskWarrior rc-file
+     * @var null|string
+     */
     protected $taskrc = null;
+
+    /**
+     * @var array
+     */
     protected $rcOptions = array();
+
+    /**
+     * @var null|string
+     */
     protected $taskwarriorVersion = null;
+
+    /**
+     * @var array
+     */
     protected $taskwarriorResponse = array();
 
     /**
      * @param string $taskrc
      * @param string $task_data
-     * @param array  $rc_options
+     * @param array $rc_options
      */
     public function __construct($taskrc = '~/.taskrc', $task_data = '~/.task', $rc_options = array())
     {
-        $this->taskData = $task_data;
-        $this->taskrc = $taskrc;
+        $this->taskData  = $task_data;
+        $this->taskrc    = $taskrc;
         $this->rcOptions = $rc_options;
     }
 
@@ -78,7 +90,7 @@ class Taskwarrior
      */
     public function getVersion()
     {
-        if (!$this->taskwarriorVersion) {
+        if ( ! $this->taskwarriorVersion) {
             $this->setVersion();
         }
 
@@ -90,10 +102,9 @@ class Taskwarrior
      */
     public function setVersion()
     {
-        $this->taskwarriorVersion = $this->taskCommand('--version')->getOutput();
-        $process = new Process('task --version');
-        $process->run();
-        $this->taskwarriorVersion = $process->getOutput();
+        $this->taskwarriorVersion = $this
+            ->taskCommand('--version', null, array(), $useRcOptions = false)
+            ->getOutput();
 
         return $this;
     }
@@ -103,6 +114,7 @@ class Taskwarrior
      *
      * @param mixed $task
      *   The task object or a data file containing JSON encoded tasks.
+     * @return $this|bool
      */
     public function import($task)
     {
@@ -110,16 +122,17 @@ class Taskwarrior
         if (is_object($task)) {
             $jsonData = $this->serializeTask($task);
             // Write the serialized task to a temp file.
-            $data_file = tempnam(sys_get_temp_dir(), 'LibTask') . '.json';
-            $fs->dumpFile($data_file, $jsonData);
+            $dataFile = tempnam(sys_get_temp_dir(), 'LibTask') . '.json';
+            $fs->dumpFile($dataFile, $jsonData);
         } else {
-            $data_file = $task;
+            $dataFile = $task;
+            $jsonData = null;
             // If we have a data file, check that it exists.
-            if (!$fs->exists($data_file)) {
+            if ( ! $fs->exists($dataFile)) {
                 return false;
             }
         }
-        $result = $this->taskCommand('import', $data_file)->getResponse();
+        $result = $this->taskCommand('import', $dataFile)->getResponse();
         if (is_object($task)) {
             // If task is an object then get the UUID and the loaded task.
             $this->taskwarriorResponse['uuid'] = $this->getUuidFromImport($task);
@@ -135,6 +148,7 @@ class Taskwarrior
      * `done` command.
      *
      * @param string $uuid
+     * @return $this|array|bool
      */
     public function complete($uuid)
     {
@@ -143,6 +157,9 @@ class Taskwarrior
 
     /**
      * `delete` command.
+     *
+     * @param string $uuid
+     * @return $this|array|bool
      */
     public function delete($uuid)
     {
@@ -153,6 +170,7 @@ class Taskwarrior
      * Wrapper around update() and add().
      *
      * @param Task $task
+     * @return $this|bool|Taskwarrior
      */
     public function save(Task $task)
     {
@@ -165,25 +183,26 @@ class Taskwarrior
      * The Task parameter must contain a UUID for the task to be updated.
      *
      * @param Task $task
+     * @return array
      */
     public function update(Task $task)
     {
-        if (!$task->getUuid()) {
+        if ( ! $task->getUuid()) {
             return false;
         }
         // Make sure we can load a task. TODO return error if not possible.
-        $existing_task = $this->loadTask(sprintf('uuid:%s', $task->getUuid()));
-        if (!$existing_task) {
+        /** @var Task $existingTask */
+        $existingTask = $this->loadTask(sprintf('uuid:%s', $task->getUuid()));
+        if ( ! $existingTask) {
             return false;
         }
         // Build a string to use with taskCommand().
-        $modify = array();
+        $modify                = array();
         $modify['description'] = $task->getDescription();
         if ($task->getDue()) {
             $modify['due'] = $task->getDue();
         }
         // Taskwarrior doesn't support adding annotations via `modify`.
-        $annotations = $task->getAnnotations();
         if ($task->getEntry()) {
             $modify['entry'] = $task->getEntry();
         }
@@ -212,24 +231,24 @@ class Taskwarrior
             $modify['priority'] = $task->getPriority();
         }
         // TODO: Add support for remaining properties.
-        $result = $this->taskCommand('modify', $existing_task->getUuid(), $modify)->getResponse();
+        $result = $this->taskCommand('modify', $existingTask->getUuid(), $modify)->getResponse();
         // Add annotations if any, and if they are different from what is
         // already there.
-        $existing_annotations = $existing_task->getAnnotations();
-        $existing_annotations_data = array();
-        if (count($existing_annotations)) {
-            foreach ($existing_annotations as $note) {
-                $existing_annotations_data[] = $note->getDescription();
+        $existingAnnotations     = $existingTask->getAnnotations();
+        $existingAnnotationsData = array();
+        if (count($existingAnnotations)) {
+            foreach ($existingAnnotations as $note) {
+                $existingAnnotationsData[] = $note->getDescription();
             }
         }
-        $new_annotations = $task->getAnnotations();
-        $new_annotations_data = array();
-        if (count($new_annotations)) {
-            foreach ($new_annotations as $note) {
-                $new_annotations_data[] = $note->getDescription();
+        $newAnnotations     = $task->getAnnotations();
+        $newAnnotationsData = array();
+        if (count($newAnnotations)) {
+            foreach ($newAnnotations as $note) {
+                $newAnnotationsData[] = $note->getDescription();
             }
         }
-        $annotations_diff = array_diff($new_annotations_data, $existing_annotations_data);
+        $annotations_diff = array_diff($newAnnotationsData, $existingAnnotationsData);
         if (count($annotations_diff)) {
             foreach ($annotations_diff as $annotation) {
                 $note = new Annotation($annotation);
@@ -244,6 +263,9 @@ class Taskwarrior
 
     /**
      * Annotate a task.
+     * @param Task $task
+     * @param Annotation $annotation
+     * @return $this|array|bool
      */
     public function annotate(Task $task, Annotation $annotation)
     {
@@ -253,12 +275,14 @@ class Taskwarrior
     /**
      * Add a task.
      *
-     * @param array $mods
+     * @param Task $task
+     * @return $this
      */
     public function addTask(Task $task)
     {
         $response = $this->import($task)
             ->getResponse();
+
         $response['uuid'] = $this->getUuidFromImport($task);
         $this->setResponse(array('task' => $this->loadTask(sprintf('uuid:%s', $response['uuid']))));
 
@@ -267,34 +291,47 @@ class Taskwarrior
 
     /**
      * Get the total active time for a task.
+     * @param $uuid
+     * @return string|null
      */
     public function getTaskActiveTime($uuid)
     {
         $task_info_output = $this->taskCommand('info', $uuid)->getOutput();
         if (strpos($task_info_output, 'Total active time')) {
             $task_info_output_components = explode(' ', $task_info_output);
+
             return trim(end($task_info_output_components));
         }
+
+        return null;
     }
 
-    public function getUuidFromImport($task)
+    /**
+     * @param Task $task
+     * @return string
+     */
+    public function getUuidFromImport(Task $task)
     {
         // Parse the output and get the task UUID.
-        $result = $this->getResponse();
-        $output = explode(' ', $result['output']);
-        $parts = explode(' ', $result['command_line']);
-        $intersect = array_intersect($output, $parts);
+        $result   = $this->getResponse();
+        $output   = explode(' ', $result['output']);
+        $parts    = explode(' ', $result['command_line']);
+        $filename = null;
         foreach ($output as $item) {
             if (in_array(trim($item), $parts)) {
                 $filename = $item;
                 break;
             }
         }
+        if ($filename === null) {
+            new Exception('$filename not set');
+        }
+
         // Get the filename from the output.
         $output = $result['output'];
         $output = ltrim($output, 'Importing ');
         $output = ltrim($output, $filename);
-        $uuid = trim(substr($output, 0, strpos($output, $task->getDescription())));
+        $uuid   = trim(substr($output, 0, strpos($output, $task->getDescription())));
 
         return $uuid;
     }
@@ -302,18 +339,21 @@ class Taskwarrior
     /**
      * Load a single Task.
      *
-     * @return array
+     * @param string|null $filter
+     * @param array $options
+     * @param string|bool $json
+     * @return array|bool|Task
      */
-    public function loadTask($filter = NULL, $options = array(), $json = false)
+    public function loadTask($filter = null, $options = array(), $json = false)
     {
         $tasks = $this->loadTasks($filter, $options, $json);
-        if (!$json && (!is_array($tasks) || !count($tasks))) {
+        if ( ! $json && ( ! is_array($tasks) || ! count($tasks))) {
             // TODO: Throw exception.
             return false;
-        }
-        elseif ($json) {
-          $tasks = json_decode($tasks);
-          return json_encode(array_shift($tasks));
+        } elseif ($json) {
+            $tasks = json_decode($tasks);
+
+            return json_encode(array_shift($tasks));
         }
 
         return array_shift($tasks);
@@ -323,32 +363,30 @@ class Taskwarrior
      * Load an array of Tasks.
      *
      * @param  string $filter
-     * @param  array  $options
+     * @param  array $options
      * @param  bool $json
-     * @return array
+     * @return array|bool|Task
      */
-    public function loadTasks($filter = NULL, $options = array(), $json = FALSE)
+    public function loadTasks($filter = null, $options = array(), $json = FALSE)
     {
         $data = $this->taskCommand('export', $filter, $options)
             ->getResponse();
-        if (!$data['success'] || $data['exit_code'] != 0) {
+        if ( ! $data['success'] || $data['exit_code'] != 0) {
             return false;
         }
-        if (!$data['output']) {
+        if ( ! $data['output']) {
             return array();
         }
         // Just return the JSON data.
         if ($json) {
-          return $data['output'];
+            return $data['output'];
         }
         $builder = SerializerBuilder::create();
         $builder
-            ->configureListeners(function(EventDispatcher $dispatcher) {
+            ->configureListeners(function (EventDispatcher $dispatcher) {
                 $dispatcher->addSubscriber(new TaskDeserializeSubscriber());
-            })
-        ;
+            });
         $serializer = $builder->build();
-        $tasks = array();
         try {
             $object = $serializer->deserialize($data['output'], 'ArrayCollection<Libtask\Task\Task>', 'json');
         } catch (RuntimeException $e) {
@@ -364,11 +402,12 @@ class Taskwarrior
      * Add options to the ProcessBuilder object.
      *
      * @param ProcessBuilder $process_builder
-     * @param array          $options
+     * @param array $options
+     * @return $this
      */
     public function addOptions(ProcessBuilder &$process_builder, $options = array())
     {
-        if (!is_array($options) && is_string($options)) {
+        if ( ! is_array($options) && is_string($options)) {
             $process_builder->add($options);
 
             return $this;
@@ -390,10 +429,14 @@ class Taskwarrior
 
     /**
      * Add RC options to the ProcessBuilder object.
+     *
+     * @param ProcessBuilder $process_builder
+     * @param array $options
+     * @return $this|bool
      */
     public function addRcOptions(ProcessBuilder &$process_builder, $options = array())
     {
-        if (!count($options)) {
+        if ( ! count($options)) {
             return false;
         }
         foreach ($options as $option) {
@@ -408,19 +451,22 @@ class Taskwarrior
      *
      * This method should not be called directly if possible.
      *
-     * @param  string $command The taskwarrior command.
-     * @param  string $filter  A filter to use with the command.
-     * @param  array  $options
-     * @return array
+     * @param string $command The taskwarrior command.
+     * @param string $filter A filter to use with the command.
+     * @param array $options
+     * @param bool $useRcOptions
+     * @return $this|array|bool
      */
-    public function taskCommand($command = NULL, $filter = NULL, $options = array())
+    public function taskCommand($command = null, $filter = null, $options = array(), $useRcOptions = true)
     {
-        if (!$command) {
+        if ( ! $command) {
             return false;
         }
         $this->setResponse(array());
         $process_builder = new ProcessBuilder();
-        $this->addRcOptions($process_builder, array_merge($this->rcOptions, $this->getGlobalRcOptions()));
+        if ($useRcOptions) {
+            $this->addRcOptions($process_builder, array_merge($this->rcOptions, $this->getGlobalRcOptions()));
+        }
         if ($filter) {
             $process_builder->add($filter);
         }
@@ -435,11 +481,11 @@ class Taskwarrior
             $process->checkTimeout();
         }
         $response = array(
-            'output' => $process->getOutput(),
+            'output'       => $process->getOutput(),
             'error_output' => $process->getErrorOutput(),
             'command_line' => $process->getCommandLine(),
-            'success' => $process->isSuccessful(),
-            'exit_code' => $process->getExitCode(),
+            'success'      => $process->isSuccessful(),
+            'exit_code'    => $process->getExitCode(),
         );
 
         return $this->setResponse($response);
@@ -448,8 +494,9 @@ class Taskwarrior
     /**
      * Set the taskwarriorResponse variable.
      * @param array $response
+     * @return $this
      */
-    public function setResponse($response)
+    public function setResponse(array $response)
     {
         $this->taskwarriorResponse = array_merge($this->taskwarriorResponse, $response);
 
@@ -458,6 +505,8 @@ class Taskwarrior
 
     /**
      * Start a task.
+     * @param string $uuid
+     * @return array
      */
     public function start($uuid)
     {
@@ -466,6 +515,8 @@ class Taskwarrior
 
     /**
      * Stop a task.
+     * @param string $uuid
+     * @return array
      */
     public function stop($uuid)
     {
@@ -476,12 +527,13 @@ class Taskwarrior
      * Serializes a task to JSON for importing into Taskwarrior.
      *
      * @param Task $task
+     * @return string
      */
     public function serializeTask(Task $task)
     {
-        $serializer = SerializerBuilder::create()
-        ->addDefaultHandlers()
-        ->build();
+        $serializer  = SerializerBuilder::create()
+            ->addDefaultHandlers()
+            ->build();
         $jsonContent = $serializer->serialize($task, 'json');
         $jsonContent = str_replace("\\/", "/", $jsonContent);
 
@@ -490,6 +542,8 @@ class Taskwarrior
 
     /**
      * Return an array of global taskrc options.
+     *
+     * @return array
      */
     public function getGlobalRcOptions()
     {
@@ -500,5 +554,4 @@ class Taskwarrior
             'rc.confirmation=no',
         );
     }
-
 }
