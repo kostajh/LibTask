@@ -20,7 +20,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function __construct()
     {
         $this->taskData = __DIR__ . '/.task';
-        $this->taskrc = __DIR__ . '/.taskrc';
+        $this->taskrc   = __DIR__ . '/.taskrc';
     }
 
     /**
@@ -54,7 +54,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
             array(
                 'rc:' . __DIR__ . '/.task',
                 'rc.data.location=' . __DIR__ . '/.taskrc',
-                ));
+            ));
         $process_builder->setPrefix('task');
         $process = $process_builder->getProcess();
         $process->run();
@@ -85,7 +85,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testGetVersion()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $version = $taskwarrior->getVersion();
+        $version     = $taskwarrior->getVersion();
         $this->assertRegExp('/2./', $version);
     }
 
@@ -116,7 +116,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     {
         // Load all tasks.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $tasks = $taskwarrior->loadTasks();
+        $tasks       = $taskwarrior->loadTasks();
         $this->assertNotEmpty($taskwarrior->loadTasks());
         // Load tasks with filter.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
@@ -155,7 +155,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     {
         // Test a basic command.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $ret = $taskwarrior->taskCommand('list')->getResponse();
+        $ret         = $taskwarrior->taskCommand('list')->getResponse();
         $this->assertNotEmpty($ret);
         $this->assertNotEmpty($ret['output']);
         $this->assertEquals($ret['exit_code'], 0);
@@ -175,7 +175,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testGetGlobalRcOptions()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $rc_options = $taskwarrior->getGlobalRcOptions();
+        $rc_options  = $taskwarrior->getGlobalRcOptions();
         $this->assertContains('rc:' . $this->taskrc, $rc_options);
         $this->assertContains('rc.data.location=' . $this->taskData, $rc_options);
         $this->assertContains('rc.json.array=true', $rc_options);
@@ -187,7 +187,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testAddRcOptions()
     {
         $process_builder = new ProcessBuilder();
-        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $taskwarrior     = new Taskwarrior($this->taskrc, $this->taskData);
         // Test failing to add options.
         $this->assertFalse($taskwarrior->addRcOptions($process_builder));
         // Add options.
@@ -202,7 +202,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testAddOptions()
     {
         $process_builder = new ProcessBuilder();
-        $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
+        $taskwarrior     = new Taskwarrior($this->taskrc, $this->taskData);
         // Add options.
         $taskwarrior->addOptions($process_builder, array('status' => 'completed'));
         $process = $process_builder->getProcess();
@@ -217,7 +217,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         self::deleteTestData();
         // Test creating a new task.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $task = new Task('Drink coffee');
+        $task        = new Task('Drink coffee');
         $task->setProject('mornings');
         $task->setPriority('M');
         $annotation_one = new Annotation('No cream or sugar');
@@ -249,10 +249,10 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testAnnotate()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $tasks = $taskwarrior->loadTasks();
-        $task = $taskwarrior->loadTask('description:"Rinse coffee cup"');
-        $annotation = new Annotation('Delicious coffee.');
-        $result = $taskwarrior->annotate($task, $annotation)->getResponse();
+        $tasks       = $taskwarrior->loadTasks();
+        $task        = $taskwarrior->loadTask('description:"Rinse coffee cup"');
+        $annotation  = new Annotation('Delicious coffee.');
+        $result      = $taskwarrior->annotate($task, $annotation)->getResponse();
         $this->assertEquals('1', $result['success']);
     }
 
@@ -262,7 +262,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testAddTask()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $task = new Task('Brew coffee');
+        $task        = new Task('Brew coffee');
         $task
             ->setPriority('H')
             ->setDue('tomorrow')
@@ -296,8 +296,8 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testCompleteTask()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $task = new Task('Finish LibTask');
-        $result = $taskwarrior->addTask($task)->getResponse();
+        $task        = new Task('Finish LibTask');
+        $result      = $taskwarrior->addTask($task)->getResponse();
         $this->assertNotEmpty($result['task']);
         $response = $taskwarrior->complete($result['task']->getUuid())->getResponse();
         $this->assertContains('Completed task', $response['output']);
@@ -314,10 +314,10 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testDeleteTask()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $task = $taskwarrior->loadTask('description:"Finish LibTask"', array('status' => 'completed'));
+        $task        = $taskwarrior->loadTask('description:"Finish LibTask"', array('status' => 'completed'));
         $this->assertInstanceOf('LibTask\Task\Task', $task);
         $response = $taskwarrior->delete($task->getUuid())
-          ->getResponse();
+            ->getResponse();
         $this->assertContains('Deleting task', $response['output']);
         $this->assertEquals(1, $response['success']);
         $deleted_task = $taskwarrior->loadTask(sprintf('uuid:%s', $task->getUuid()));
@@ -333,7 +333,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $task->setDescription('Hello world');
         $task->setUdas(array('logged' => 'false', 'estimate' => '1day'));
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $jsonData = $taskwarrior->serializeTask($task);
+        $jsonData    = $taskwarrior->serializeTask($task);
         $this->assertRegExp('/"description":"Hello world"/', $jsonData);
         $this->assertRegExp('/"logged":"false"/', $jsonData);
         $this->assertRegExp('/"estimate":"1day"/', $jsonData);

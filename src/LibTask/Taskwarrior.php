@@ -102,10 +102,9 @@ class Taskwarrior
      */
     public function setVersion()
     {
-        $this->taskwarriorVersion = $this->taskCommand('--version')->getOutput();
-        $process                  = new Process('task --version');
-        $process->run();
-        $this->taskwarriorVersion = $process->getOutput();
+        $this->taskwarriorVersion = $this
+            ->taskCommand('--version', null, array(), $useRcOptions = false)
+            ->getOutput();
 
         return $this;
     }
@@ -449,16 +448,19 @@ class Taskwarrior
      * @param string $command The taskwarrior command.
      * @param string $filter A filter to use with the command.
      * @param array $options
-     * @return array
+     * @param bool $useRcOptions
+     * @return $this|array|bool
      */
-    public function taskCommand($command = null, $filter = null, $options = array())
+    public function taskCommand($command = null, $filter = null, $options = array(), $useRcOptions = true)
     {
         if ( ! $command) {
             return false;
         }
         $this->setResponse(array());
         $process_builder = new ProcessBuilder();
-        $this->addRcOptions($process_builder, array_merge($this->rcOptions, $this->getGlobalRcOptions()));
+        if ($useRcOptions) {
+            $this->addRcOptions($process_builder, array_merge($this->rcOptions, $this->getGlobalRcOptions()));
+        }
         if ($filter) {
             $process_builder->add($filter);
         }
