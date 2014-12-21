@@ -2,7 +2,7 @@
 
 namespace LibTask;
 
-use Symfony\Component\Process\Process;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Process\ProcessBuilder;
 use Symfony\Component\Filesystem\Filesystem;
 use JMS\Serializer\SerializerBuilder;
@@ -122,16 +122,17 @@ class Taskwarrior
         if (is_object($task)) {
             $jsonData = $this->serializeTask($task);
             // Write the serialized task to a temp file.
-            $data_file = tempnam(sys_get_temp_dir(), 'LibTask') . '.json';
-            $fs->dumpFile($data_file, $jsonData);
+            $dataFile = tempnam(sys_get_temp_dir(), 'LibTask') . '.json';
+            $fs->dumpFile($dataFile, $jsonData);
         } else {
-            $data_file = $task;
+            $dataFile = $task;
+            $jsonData = null;
             // If we have a data file, check that it exists.
-            if ( ! $fs->exists($data_file)) {
+            if ( ! $fs->exists($dataFile)) {
                 return false;
             }
         }
-        $result = $this->taskCommand('import', $data_file)->getResponse();
+        $result = $this->taskCommand('import', $dataFile)->getResponse();
         if (is_object($task)) {
             // If task is an object then get the UUID and the loaded task.
             $this->taskwarriorResponse['uuid'] = $this->getUuidFromImport($task);
@@ -147,7 +148,7 @@ class Taskwarrior
      * `done` command.
      *
      * @param string $uuid
-     * @return array
+     * @return $this|array|bool
      */
     public function complete($uuid)
     {
@@ -158,7 +159,7 @@ class Taskwarrior
      * `delete` command.
      *
      * @param string $uuid
-     * @return array
+     * @return $this|array|bool
      */
     public function delete($uuid)
     {
@@ -182,6 +183,7 @@ class Taskwarrior
      * The Task parameter must contain a UUID for the task to be updated.
      *
      * @param Task $task
+     * @return array
      */
     public function update(Task $task)
     {
@@ -189,8 +191,9 @@ class Taskwarrior
             return false;
         }
         // Make sure we can load a task. TODO return error if not possible.
-        $existing_task = $this->loadTask(sprintf('uuid:%s', $task->getUuid()));
-        if ( ! $existing_task) {
+        /** @var Task $existingTask */
+        $existingTask = $this->loadTask(sprintf('uuid:%s', $task->getUuid()));
+        if ( ! $existingTask) {
             return false;
         }
         // Build a string to use with taskCommand().
@@ -200,7 +203,6 @@ class Taskwarrior
             $modify['due'] = $task->getDue();
         }
         // Taskwarrior doesn't support adding annotations via `modify`.
-        $annotations = $task->getAnnotations();
         if ($task->getEntry()) {
             $modify['entry'] = $task->getEntry();
         }
@@ -229,24 +231,24 @@ class Taskwarrior
             $modify['priority'] = $task->getPriority();
         }
         // TODO: Add support for remaining properties.
-        $result = $this->taskCommand('modify', $existing_task->getUuid(), $modify)->getResponse();
+        $result = $this->taskCommand('modify', $existingTask->getUuid(), $modify)->getResponse();
         // Add annotations if any, and if they are different from what is
         // already there.
-        $existing_annotations      = $existing_task->getAnnotations();
-        $existing_annotations_data = array();
-        if (count($existing_annotations)) {
-            foreach ($existing_annotations as $note) {
-                $existing_annotations_data[] = $note->getDescription();
+        $existingAnnotations     = $existingTask->getAnnotations();
+        $existingAnnotationsData = array();
+        if (count($existingAnnotations)) {
+            foreach ($existingAnnotations as $note) {
+                $existingAnnotationsData[] = $note->getDescription();
             }
         }
-        $new_annotations      = $task->getAnnotations();
-        $new_annotations_data = array();
-        if (count($new_annotations)) {
-            foreach ($new_annotations as $note) {
-                $new_annotations_data[] = $note->getDescription();
+        $newAnnotations     = $task->getAnnotations();
+        $newAnnotationsData = array();
+        if (count($newAnnotations)) {
+            foreach ($newAnnotations as $note) {
+                $newAnnotationsData[] = $note->getDescription();
             }
         }
-        $annotations_diff = array_diff($new_annotations_data, $existing_annotations_data);
+        $annotations_diff = array_diff($newAnnotationsData, $existingAnnotationsData);
         if (count($annotations_diff)) {
             foreach ($annotations_diff as $annotation) {
                 $note = new Annotation($annotation);
@@ -263,7 +265,7 @@ class Taskwarrior
      * Annotate a task.
      * @param Task $task
      * @param Annotation $annotation
-     * @return array
+     * @return $this|array|bool
      */
     public function annotate(Task $task, Annotation $annotation)
     {
@@ -311,16 +313,20 @@ class Taskwarrior
     public function getUuidFromImport(Task $task)
     {
         // Parse the output and get the task UUID.
-        $result    = $this->getResponse();
-        $output    = explode(' ', $result['output']);
-        $parts     = explode(' ', $result['command_line']);
-        $intersect = array_intersect($output, $parts);
+        $result   = $this->getResponse();
+        $output   = explode(' ', $result['output']);
+        $parts    = explode(' ', $result['command_line']);
+        $filename = null;
         foreach ($output as $item) {
             if (in_array(trim($item), $parts)) {
                 $filename = $item;
                 break;
             }
         }
+        if ($filename === null) {
+            new Exception('$filename not set');
+        }
+
         // Get the filename from the output.
         $output = $result['output'];
         $output = ltrim($output, 'Importing ');
@@ -336,7 +342,7 @@ class Taskwarrior
      * @param string|null $filter
      * @param array $options
      * @param string|bool $json
-     * @return array
+     * @return array|bool|Task
      */
     public function loadTask($filter = null, $options = array(), $json = false)
     {
@@ -359,7 +365,7 @@ class Taskwarrior
      * @param  string $filter
      * @param  array $options
      * @param  bool $json
-     * @return array
+     * @return array|bool|Task
      */
     public function loadTasks($filter = null, $options = array(), $json = FALSE)
     {

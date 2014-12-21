@@ -10,7 +10,6 @@ use Symfony\Component\Process\ProcessBuilder;
 
 class TaskwarriorTest extends \PHPUnit_Framework_TestCase
 {
-
     protected $taskrc;
     protected $taskData;
 
@@ -116,7 +115,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     {
         // Load all tasks.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $tasks       = $taskwarrior->loadTasks();
+        $taskwarrior->loadTasks();
         $this->assertNotEmpty($taskwarrior->loadTasks());
         // Load tasks with filter.
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
@@ -232,14 +231,16 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
             ->getResponse();
         // Test updating a task.
         $this->assertNotEmpty($result['task']);
+        /** @var Task $task */
         $task = $result['task'];
         $task->setDescription('Rinse coffee cup');
         $task->setUdas(array('estimate' => '2days'));
         $annotation = new Annotation('Strong');
         $task->setAnnotations(array($annotation));
         $result = $taskwarrior->save($task);
-        $this->assertEquals($result['task']->getDescription(), 'Rinse coffee cup');
-        $udas = $result['task']->getUdas();
+        $task   = $result['task'];
+        $this->assertEquals($task->getDescription(), 'Rinse coffee cup');
+        $udas = $task->getUdas();
         $this->assertEquals($udas['estimate'], '172800');
     }
 
@@ -249,10 +250,10 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testAnnotate()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $tasks       = $taskwarrior->loadTasks();
-        $task        = $taskwarrior->loadTask('description:"Rinse coffee cup"');
-        $annotation  = new Annotation('Delicious coffee.');
-        $result      = $taskwarrior->annotate($task, $annotation)->getResponse();
+        $taskwarrior->loadTasks();
+        $task       = $taskwarrior->loadTask('description:"Rinse coffee cup"');
+        $annotation = new Annotation('Delicious coffee.');
+        $result     = $taskwarrior->annotate($task, $annotation)->getResponse();
         $this->assertEquals('1', $result['success']);
     }
 
@@ -262,7 +263,8 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
     public function testAddTask()
     {
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
-        $task        = new Task('Brew coffee');
+
+        $task = new Task('Brew coffee');
         $task
             ->setPriority('H')
             ->setDue('tomorrow')
@@ -272,6 +274,7 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $result = $taskwarrior->addTask($task)->getResponse();
         $this->assertContains('Created task', $result);
         $this->assertNotEmpty($result['task']);
+        /** @var Task $task */
         $task = $result['task'];
         $this->assertEquals('Brew coffee', $task->getDescription());
         $this->assertEquals('H', $task->getPriority());
@@ -281,13 +284,14 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($udas['estimate'], '3days');
         $this->assertEquals($udas['logged'], 'false');
         $this->assertEquals($result['uuid'], $task->getUuid());
-        $udas = $task->getUdas();
         // Test adding dependencies.
         $new_task = new Task('Drink coffee');
         $new_task->setDependencies(array($task->getUuid()));
         $result = $taskwarrior->addTask($new_task)->getResponse();
         $this->assertInstanceOf('LibTask\Task\Task', $result['task']);
-        $this->assertEquals($result['task']->getDependencies(), $task->getUuid());
+        /** @var Task $resultTask */
+        $resultTask = $result['task'];
+        $this->assertEquals($resultTask->getDependencies(), $task->getUuid());
     }
 
     /**
@@ -298,12 +302,14 @@ class TaskwarriorTest extends \PHPUnit_Framework_TestCase
         $taskwarrior = new Taskwarrior($this->taskrc, $this->taskData);
         $task        = new Task('Finish LibTask');
         $result      = $taskwarrior->addTask($task)->getResponse();
-        $this->assertNotEmpty($result['task']);
-        $response = $taskwarrior->complete($result['task']->getUuid())->getResponse();
+        /** @var Task $task */
+        $task = $result['task'];
+        $this->assertNotEmpty($task);
+        $response = $taskwarrior->complete($task->getUuid())->getResponse();
         $this->assertContains('Completed task', $response['output']);
         $this->assertEquals(1, $response['success']);
-        $this->assertEquals($result['task']->getUuid(), $response['uuid']);
-        $done_task = $taskwarrior->loadTask(sprintf('uuid:%s', $result['task']->getUuid()));
+        $this->assertEquals($task->getUuid(), $response['uuid']);
+        $done_task = $taskwarrior->loadTask(sprintf('uuid:%s', $task->getUuid()));
         $this->assertInstanceOf('LibTask\Task\Task', $done_task);
         $this->assertEquals($done_task->getStatus(), 'completed');
     }

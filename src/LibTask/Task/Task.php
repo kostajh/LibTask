@@ -26,79 +26,94 @@ class Task
      * @Type("integer")
      */
     private $id;
+
     /**
      * @Type("string")
      */
+
     private $description;
     /**
      * @Type("string")
      */
+
     private $due;
     /**
      * @Type("string")
      */
+
     private $entry;
     /**
      * @Type("string")
      */
+
     private $modified;
     /**
      * @Type("string")
      */
+
     private $project;
     /**
      * @Type("string")
      */
+
     private $status;
     /**
      * @Type("array<string>")
      */
+
     private $tags;
     /**
      * @Type("string")
      */
+
     private $start;
     /**
      * @Type("string")
      */
+
     private $parent;
     /**
      * @Type("string")
      */
+
     private $uuid;
     /**
      * @Type("double")
      */
+
     private $urgency;
     /**
      * @Type("string")
      * @Accessor(getter="getSerializedDependencies")
      */
+
     private $depends;
     /**
      * @Type("array<LibTask\Task\Annotation>")
      * @Accessor(getter="getAnnotations", setter="setAnnotations")
      */
+
     private $annotations;
     /**
      * @Type("array")
      * @Inline
      * @Accessor(getter="getUdas")
      */
+
     private $udas;
     /**
      * @Type("string")
      */
+
     private $priority;
 
     /**
      * Construct.
      *
-     * @param $description The description to use for the task.
+     * @param string $description The description to use for the task.
      */
     public function __construct($description = '')
     {
-        // Set task description.
         if ($description) {
             $this->setDescription($description);
         }
@@ -119,6 +134,8 @@ class Task
 
     /**
      * Get the task start time.
+     *
+     * @return string
      */
     public function getStart()
     {
@@ -129,7 +146,7 @@ class Task
      * Get the task description.
      *
      * @Type("string")
-     * @return string Taskwarrior task description
+     * @return string
      */
     public function getDescription()
     {
@@ -138,6 +155,8 @@ class Task
 
     /**
      * Get the task annotations.
+     *
+     * @return Annotation[]
      */
     public function getAnnotations()
     {
@@ -155,6 +174,9 @@ class Task
         return $this->due;
     }
 
+    /**
+     * @return mixed
+     */
     public function getParent()
     {
         return $this->parent;
@@ -162,79 +184,113 @@ class Task
 
     /**
      * Get the task time entry.
-     *
      * If the value is not set, return the current time as a UNIX timestamp.
      *
      * @Type("integer")
-     *
      * @return int UNIX timestamp of the task creation time.
      */
     public function getEntry()
     {
-        return ($this->entry) ? $this->entry :  (string) time();
+        return ($this->entry) ? $this->entry : (string)time();
     }
 
+    /**
+     * @return mixed
+     */
     public function getModified()
     {
         return $this->modified;
     }
 
+    /**
+     * @return mixed
+     */
     public function getProject()
     {
         return $this->project;
     }
 
+    /**
+     * @return mixed
+     */
     public function getStatus()
     {
         return $this->status;
     }
 
+    /**
+     * @return mixed
+     */
     public function getTags()
     {
         return $this->tags;
     }
 
+    /**
+     * @return mixed
+     */
     public function getUuid()
     {
         return $this->uuid;
     }
 
+    /**
+     * @return mixed
+     */
     public function getUrgency()
     {
         return $this->urgency;
     }
 
+    /**
+     * @return mixed
+     */
     public function getDependencies()
     {
         return $this->depends;
     }
 
+    /**
+     * @return string
+     */
     public function getSerializedDependencies()
     {
-        return (is_array($this->depends)) ? implode(',', $this->depends) : (string) $this->depends;
+        return (is_array($this->depends)) ? implode(',', $this->depends) : (string)$this->depends;
     }
 
+    /**
+     * @return string
+     */
     public function getUdas()
     {
         return $this->udas;
     }
 
+    /**
+     * @return mixed
+     */
     public function getPriority()
     {
         return $this->priority;
     }
 
-    // Setters.
-
     /**
      * Note, this should only be used to unset the Id.
+     * 
+     * @param $id
+     * @return $this
      */
     public function setId($id)
     {
         $this->id = $id;
+
         return $this;
     }
 
+    /**
+     * @param string $description
+     * @return $this
+     */
     public function setDescription($description)
     {
         $this->description = $description;
@@ -242,6 +298,10 @@ class Task
         return $this;
     }
 
+    /**
+     * @param $priority
+     * @return $this
+     */
     public function setPriority($priority)
     {
         $this->priority = $priority;
@@ -249,6 +309,10 @@ class Task
         return $this;
     }
 
+    /**
+     * @param $due
+     * @return $this
+     */
     public function setDue($due)
     {
         $this->due = (is_string($due)) ? strtotime($due) : $due;
@@ -256,6 +320,10 @@ class Task
         return $this;
     }
 
+    /**
+     * @param $entry
+     * @return $this
+     */
     public function setEntry($entry)
     {
         $this->entry = (is_string($entry)) ? strtotime($entry) : $entry;
@@ -263,12 +331,21 @@ class Task
         return $this;
     }
 
+    /**
+     * @param $parent
+     * @return $this
+     */
     public function setParent($parent)
     {
         $this->parent = $parent;
+
         return $this;
     }
 
+    /**
+     * @param $modified
+     * @return $this
+     */
     public function setModified($modified)
     {
         $this->modified = (is_string($modified)) ? strtotime($modified) : $modified;
@@ -276,6 +353,10 @@ class Task
         return $this;
     }
 
+    /**
+     * @param $project
+     * @return $this
+     */
     public function setProject($project)
     {
         $this->project = $project;
@@ -283,9 +364,13 @@ class Task
         return $this;
     }
 
+    /**
+     * @param $status
+     * @return $this
+     */
     public function setStatus($status)
     {
-        if (!in_array($status, array('pending', 'completed'))) {
+        if ( ! in_array($status, array('pending', 'completed'))) {
             // TODO: Throw exception.
         }
         $this->status = $status;
@@ -293,6 +378,10 @@ class Task
         return $this;
     }
 
+    /**
+     * @param $tags
+     * @return $this
+     */
     public function setTags($tags)
     {
         $this->tags = $tags;
@@ -300,6 +389,10 @@ class Task
         return $this;
     }
 
+    /**
+     * @param string $uuid
+     * @return $this
+     */
     public function setUuid($uuid)
     {
         $this->uuid = $uuid;
@@ -307,12 +400,21 @@ class Task
         return $this;
     }
 
+    /**
+     * @param $start
+     * @return $this
+     */
     public function setStart($start)
     {
         $this->start = $start;
+
         return $this;
     }
 
+    /**
+     * @param $urgency
+     * @return $this
+     */
     public function setUrgency($urgency)
     {
         $this->urgency = $urgency;
@@ -320,6 +422,10 @@ class Task
         return $this;
     }
 
+    /**
+     * @param $depends
+     * @return $this
+     */
     public function setDependencies($depends)
     {
         $this->depends = $depends;
@@ -327,6 +433,10 @@ class Task
         return $this;
     }
 
+    /**
+     * @param $udas
+     * @return $this
+     */
     public function setUdas($udas)
     {
         $this->udas = $udas;
@@ -334,6 +444,10 @@ class Task
         return $this;
     }
 
+    /**
+     * @param $annotations
+     * @return $this
+     */
     public function setAnnotations($annotations)
     {
         $this->annotations = $annotations;
