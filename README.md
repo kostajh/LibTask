@@ -32,7 +32,7 @@ $tasks = $taskwarrior->loadTasks('overdue', array('status' => 'pending'));
 References
 ----------
 
-[Taskwarrior JSON Format](http://taskwarrior.org/projects/taskwarrior/wiki/JSON_format)
+[Taskwarrior JSON Format](http://taskwarrior.org/docs/design/task.html)
 
 Author
 ------
